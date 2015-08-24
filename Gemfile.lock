@@ -1,11 +1,14 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    bson (3.2.1)
     daemons (1.2.3)
     diff-lcs (1.2.5)
     eventmachine (1.0.8)
     foreman (0.78.0)
       thor (~> 0.19.1)
+    mongo (2.0.6)
+      bson (~> 3.0)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -40,6 +43,7 @@ PLATFORMS
 
 DEPENDENCIES
   foreman
+  mongo
   rack-test
   rspec
   sinatra
