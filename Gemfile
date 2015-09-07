@@ -9,4 +9,5 @@ gem 'sqlite3'
 group :test, :development do
 	gem 'rspec'
 	gem 'rack-test'
+	gem 'faker'
 end

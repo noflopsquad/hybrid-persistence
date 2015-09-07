@@ -2,16 +2,21 @@ require 'sinatra/base'
 require 'mongo'
 require 'sqlite3'
 require 'json'
+require 'faker'
+require './lib/person'
+require './lib/address'
+require './lib/repo'
+require './lib/person_factory'
 
 class App < Sinatra::Base
 
 	before do
-		@mongo = Mongo::Client.new([ '127.0.0.1:27017' ], :database => 'polyglot')
-		@sql = SQLite3::Database.new "sqlite.db"
+		@people = Repo.new
 	end
 
-	get '/' do
-		content_type :json
-		{ hola: 'hola' }.to_json
+	get '/create' do
+		person = PersonFactory.fake_it
+		result = @people.insert(person)
+		halt 500 unless result == 1
 	end
 end
