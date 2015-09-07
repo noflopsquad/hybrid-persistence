@@ -9,13 +9,6 @@ class Address
 		@variable_states[:city] = city
 	end
 
-	def to_h
-		result = {
-			street_name: @street_name,
-			street_address: @street_address,
-		}
-
-		result.merge!(@variable_states)
-		result
-	end
+	protected
+	attr_reader :street_name, :street_address, :variable_states
 end
