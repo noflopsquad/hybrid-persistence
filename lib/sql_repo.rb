@@ -1,8 +1,8 @@
-require 'sqlite3'
+require './lib/connections'
 
 class SqlRepo
 	def initialize
-		@db = SQLite3::Database.new('sqlite.db')
+		@db = Connections.sql
 	end
 
 	def insert(person)

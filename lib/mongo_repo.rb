@@ -1,9 +1,8 @@
-require 'mongo'
+require './lib/connections'
 
 class MongoRepo
 	def initialize
-		Mongo::Logger.logger.level = Logger::WARN
-		@mongo = Mongo::Client.new([ '127.0.0.1:27017' ], :database => 'polyglot')
+		@mongo = Connections.mongo
 	end
 
 	def insert person
