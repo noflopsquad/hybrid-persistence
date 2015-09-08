@@ -1,3 +1,5 @@
+require 'faker'
+
 class PersonFactory
 	def self.fake_it
 		person = Person.new(Faker::Name.first_name, Faker::Name.last_name)

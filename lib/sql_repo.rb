@@ -1,3 +1,5 @@
+require 'sqlite3'
+
 class SqlRepo
 	def initialize
 		@db = SQLite3::Database.new('sqlite.db')
