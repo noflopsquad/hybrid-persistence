@@ -5,6 +5,7 @@ gem 'thin'
 gem 'foreman'
 gem 'mongo'
 gem 'sqlite3'
+gem 'rake'
 
 group :test, :development do
 	gem 'rspec'
