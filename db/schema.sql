@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS "people" (
     "title" TEXT,
     "id" INTEGER PRIMARY KEY AUTOINCREMENT
 );
-CREATE TABLE IF NOT EXISTS sqlite_sequence(name,seq);
 CREATE TABLE IF NOT EXISTS "addresses" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "city" TEXT,
