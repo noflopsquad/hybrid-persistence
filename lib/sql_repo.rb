@@ -1,11 +1,12 @@
-require 'sqlite3'
+require './lib/connections'
+require './lib/not_found'
 
 class SqlRepo
 	def initialize
-		@db = SQLite3::Database.new('sqlite.db')
+		@db = Connections.sql
 	end
 
-	def insert(person)
+	def insert person
 		serializable_person = RippedPerson.new(person)
 		addresses = serializable_person.addresses
 		persist_person(serializable_person)
@@ -13,7 +14,67 @@ class SqlRepo
 		persist_addresses(addresses, person_id)
 	end
 
+	def read first_name, last_name
+		person_descriptor = retrieve_person(first_name, last_name)
+		person = to_person(person_descriptor)
+		person_id = extract_id(person_descriptor)
+		addresses = addresses_for(person_id)
+		add_addresses(person, addresses)
+		person
+	end
+
 	private
+
+	def extract_id person_descriptor
+		person_descriptor["id"]
+	end
+
+	def retrieve_person first_name, last_name
+		query =<<-SQL
+SELECT * FROM people WHERE first_name = ? AND last_name = ?
+SQL
+
+		records = @db.execute(query, [first_name, last_name])
+		raise NotFound.new if records.empty?
+		records.first
+	end
+
+	def to_person descriptor
+		person = Person.new(descriptor["first_name"], descriptor["last_name"])
+		person.title = descriptor["title"]
+		person.credit_card = descriptor["credit_card"]
+		person.phone = descriptor["phone"]
+		person.email = descriptor["email"]
+		person
+	end
+
+	def add_addresses person, addresses
+		addresses.each do |address|
+			person.add_address(address)
+		end
+	end
+
+	def addresses_for person_id
+		addresses = retrieve_addresses_of(person_id)
+		addresses.map do |address_descriptor|
+			to_address(address_descriptor)
+		end
+	end
+
+	def retrieve_addresses_of person_id
+		addresses_query =<<-SQL
+SELECT * FROM addresses WHERE person_id = ?		
+SQL
+
+		@db.execute(addresses_query, [person_id])
+	end
+
+	def to_address descriptor
+		address = Address.new(descriptor["street_name"], descriptor["street_address"])
+		address.city = descriptor["city"]
+		address
+	end
+
 	def persist_person(person)
 		query =<<-SQL
 INSERT INTO people(first_name, last_name, phone, email, title, credit_card) 
@@ -101,4 +162,5 @@ SQL
 			@person.last_name
 		end
 	end
+
 end
