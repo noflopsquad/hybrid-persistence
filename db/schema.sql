@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS "addresses" (
     "street_address" TEXT,
     "person_id" INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS "people" (
     "first_name" TEXT,
     "last_name" TEXT,
@@ -15,13 +14,11 @@ CREATE TABLE IF NOT EXISTS "people" (
     "title" TEXT,
     "id" INTEGER PRIMARY KEY AUTOINCREMENT
 );
-
 CREATE TABLE IF NOT EXISTS "mixed_people" (
     "first_name" TEXT,
     "last_name" TEXT,
     "id" INTEGER PRIMARY KEY AUTOINCREMENT
 );
-
 CREATE TABLE IF NOT EXISTS "mixed_addresses" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "street_name" TEXT,

@@ -3,8 +3,12 @@ require './lib/connections'
 namespace :db do
   desc "Create tables"
   task :schema do
-    query = File.read('./db/schema.sql')
-    Connections.sql.execute(query)
+    file = File.read('./db/schema.sql')
+    file = file.strip! || file
+    commands = file.split(";")
+    commands.each do |command|
+      Connections.sql.execute(command)
+    end
   end
 
   desc "Drop tables"
