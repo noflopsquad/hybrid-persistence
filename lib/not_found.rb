@@ -1,2 +1,3 @@
-class NotFound < Exception
+class NotFound < StandardError
+
 end
