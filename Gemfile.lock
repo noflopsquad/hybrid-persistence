@@ -42,6 +42,7 @@ GEM
       rack (~> 1.0)
     thor (0.19.1)
     tilt (2.0.1)
+    value-object (0.1.2)
 
 PLATFORMS
   ruby
@@ -56,3 +57,4 @@ DEPENDENCIES
   sinatra
   sqlite3
   thin
+  value-object

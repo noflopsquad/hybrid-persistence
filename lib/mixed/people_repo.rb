@@ -7,9 +7,8 @@ class PeopleRepo
 	end
 
 	def insert person
-		identity = persist_identity(person)
-		persist_state(person, identity)
-		identity
+		persist_identity(person)
+		persist_state(person)
 	end
 
 	private
@@ -19,11 +18,10 @@ class PeopleRepo
 INSERT INTO mixed_people (first_name, last_name) VALUES (?, ?)
 SQL
 		@sql.execute(query, data)
-		@sql.last_insert_row_id
 	end
 
-	def persist_state(person, identity)
-		identified_state = person.variable_states.merge(from: identity)
+	def persist_state person
+		identified_state = person.variable_states.merge(from: person.identity)
 		identified_state.delete(:addresses)
 		@mongo[:person_states].insert_one(identified_state)
 	end

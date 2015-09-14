@@ -6,6 +6,7 @@ gem 'foreman'
 gem 'mongo'
 gem 'sqlite3'
 gem 'rake'
+gem 'value-object'
 
 group :test, :development do
 	gem 'rspec'

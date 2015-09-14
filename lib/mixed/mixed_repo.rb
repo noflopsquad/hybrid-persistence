@@ -1,5 +1,6 @@
 require './lib/mixed/people_repo'
 require './lib/mixed/addresses_repo'
+require 'value_object'
 
 class MixedRepo
   def initialize
@@ -9,21 +10,30 @@ class MixedRepo
 
   def insert person
     accessible = AccessiblePerson.new(person)
-    identity = @people.insert(accessible)
-    insert_addresses(accessible, identity)
+    @people.insert(accessible)
+    insert_addresses(accessible)
   end
 
   private
-  def insert_addresses person, identity
+  def insert_addresses person
     person.addresses.each do |address|
       accessible = AccessibleAddress.new(address)
-      @addresses.insert(accessible, identity)
+      @addresses.insert(accessible, person.identity)
     end
+  end
+
+  class PersonIdentity
+    extend ValueObject
+    fields :first_name, :last_name
   end
 
   class AccessiblePerson < Person
     def initialize(person)
       @person = person
+    end
+
+    def identity
+      PersonIdentity.new(first_name, last_name).hash
     end
 
     def first_name
@@ -43,11 +53,19 @@ class MixedRepo
     end
   end
 
+  class AddressIdentity
+    extend ValueObject
+    fields :street_name, :street_address
+  end
+
   class AccessibleAddress < Address
     def initialize address
       @address = address
     end
 
+    def identity
+      AddressIdentity.new(street_name, street_address).hash
+    end
 
     def street_name
       @address.street_name

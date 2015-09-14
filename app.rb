@@ -43,7 +43,7 @@ class App < Sinatra::Base
   end
 
   def people
-    @people ||= mongo_repo
+    @people ||= mixed_repo
   end
 
   def insert_sql persons
