@@ -32,10 +32,9 @@ class SqlRepo
 	end
 
 	def retrieve_person first_name, last_name
-		query =<<-SQL
-SELECT * FROM people WHERE first_name = ? AND last_name = ?
-SQL
-
+		query = """
+			SELECT * FROM people WHERE first_name = ? AND last_name = ?
+		"""
 		records = @db.execute(query, [first_name, last_name])
 		raise NotFound.new if records.empty?
 		records.first
@@ -64,10 +63,9 @@ SQL
 	end
 
 	def retrieve_addresses_of person_id
-		addresses_query =<<-SQL
-SELECT * FROM addresses WHERE person_id = ?		
-SQL
-
+		addresses_query = """
+			SELECT * FROM addresses WHERE person_id = ?		
+		"""
 		@db.execute(addresses_query, [person_id])
 	end
 
@@ -78,10 +76,10 @@ SQL
 	end
 
 	def persist_person(person)
-		query =<<-SQL
-INSERT INTO people(first_name, last_name, phone, email, title, credit_card) 
-VALUES (?, ?, ?, ?, ?, ?)
-SQL
+		query = """
+			INSERT INTO people (first_name, last_name, phone, email, title, credit_card) 
+			VALUES (?, ?, ?, ?, ?, ?)
+		"""
 
 		data = [
 			person.first_name, 
