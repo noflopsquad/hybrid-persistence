@@ -1,5 +1,5 @@
-require './lib/people_repo'
-require './lib/addresses_repo'
+require './lib/mixed/people_repo'
+require './lib/mixed/addresses_repo'
 
 class MixedRepo
   def initialize

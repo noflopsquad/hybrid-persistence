@@ -1,4 +1,6 @@
 require './lib/connections'
+require './lib/person'
+require './lib/address'
 
 class MongoRepo
 	def initialize

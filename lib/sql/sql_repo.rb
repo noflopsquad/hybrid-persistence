@@ -1,5 +1,7 @@
 require './lib/connections'
 require './lib/not_found'
+require './lib/person'
+require './lib/address'
 
 class SqlRepo
 	def initialize

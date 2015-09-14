@@ -1,4 +1,6 @@
 require 'faker'
+require './lib/person'
+require './lib/address'
 
 class PersonFactory
 	def self.fake_it
