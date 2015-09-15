@@ -135,6 +135,7 @@ SQL
 		end
 
 		def addresses
+			return [] if @person.variable_states[:addresses].nil?
 			@person.variable_states[:addresses]
 		end
 

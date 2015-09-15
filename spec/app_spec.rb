@@ -13,7 +13,17 @@ describe "Mongo Repo" do
 
     expect(retrieved).to eql(a_person)
   end
-  it "hold persons with just addresses"
+  it "hold persons with just addresses" do
+    repo = MongoRepo.new
+    first_name = "Kylie"
+    last_name = "Minogue"
+    a_person = Person.new(first_name, last_name)
+
+    repo.insert(a_person)
+    retrieved = repo.read(first_name, last_name)
+
+    expect(retrieved).to eql(a_person)
+  end
 end
 
 describe "Sql Repo" do
@@ -29,7 +39,17 @@ describe "Sql Repo" do
 
     expect(retrieved).to eql(a_person)
   end
-  it "hold persons with just addresses"
+  it "hold persons with just addresses" do
+    repo = SqlRepo.new
+    first_name = "Kylie"
+    last_name = "Minogue"
+    a_person = Person.new(first_name, last_name)
+
+    repo.insert(a_person)
+    retrieved = repo.read(first_name, last_name)
+
+    expect(retrieved).to eql(a_person)
+  end
 end
 
 describe "Mixed Repo" do
@@ -45,5 +65,15 @@ describe "Mixed Repo" do
 
     expect(retrieved).to eql(a_person)
   end
-  it "hold persons with just addresses"
+  it "hold persons with just addresses" do
+    repo = MixedRepo.new
+    first_name = "Kylie"
+    last_name = "Minogue"
+    a_person = Person.new(first_name, last_name)
+
+    repo.insert(a_person)
+    retrieved = repo.read(first_name, last_name)
+
+    expect(retrieved).to eql(a_person)
+  end
 end

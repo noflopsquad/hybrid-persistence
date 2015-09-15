@@ -60,6 +60,7 @@ class MixedRepo
     end
 
     def addresses
+      return [] if variable_states[:addresses].nil?
       variable_states[:addresses]
     end
   end

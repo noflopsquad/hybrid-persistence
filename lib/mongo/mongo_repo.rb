@@ -65,11 +65,17 @@ class MongoRepo
 			}
 
 			result.merge!(@person.variable_states)
-			addresses = @person.variable_states[:addresses].map do |address| 
+			result[:addresses] = serialize_addresses
+			result
+		end
+
+		private
+
+		def serialize_addresses
+			return [] if @person.variable_states[:addresses].nil?
+			@person.variable_states[:addresses].map do |address| 
 				SerializableAddress.new(address).to_h
 			end
-			result[:addresses] = addresses
-			result
 		end
 	end
 
