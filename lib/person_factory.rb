@@ -11,11 +11,15 @@ class PersonFactory
 		person.title = Faker::Name.title
 
 		1..5.times do
-			address = Address.new Faker::Address.street_name, Faker::Address.street_address
-			address.city = Faker::Address.city
-			person.add_address(address)
+			person.add_address(fake_address())
 		end
 	
 		person
+	end
+
+	def self.fake_address
+		address = Address.new Faker::Address.street_name, Faker::Address.street_address
+		address.city = Faker::Address.city
+		address
 	end
 end

@@ -46,10 +46,10 @@ class MongoRepo
 
 	def build_person descriptor
 		person = Person.new(descriptor[:first_name], descriptor[:last_name])
-		person.email = descriptor[:email]
-		person.phone = descriptor[:phone]
-		person.title = descriptor[:title]
-		person.credit_card = descriptor[:credit_card]
+		person.email = descriptor[:email] unless descriptor[:email].nil?
+		person.phone = descriptor[:phone] unless descriptor[:phone].nil?
+		person.title = descriptor[:title] unless descriptor[:title].nil?
+		person.credit_card = descriptor[:credit_card] unless descriptor[:credit_card].nil?
 		person
 	end
 
