@@ -1,10 +1,11 @@
 require 'spec_helper'
 
-describe "Mongo Repo" do
+shared_examples_for "a repo" do
+  let(:repo) { described_class.new }
+  let(:first_name) { "Kylie" }
+  let(:last_name) { "Minogue" }
+  
   it "holds the persons sent" do
-    repo = MongoRepo.new
-    first_name = "Kylie"
-    last_name = "Minogue"
     a_person = Person.new(first_name, last_name)
     a_person.add_address(PersonFactory.fake_address)
 
@@ -14,9 +15,6 @@ describe "Mongo Repo" do
     expect(retrieved).to eql(a_person)
   end
   it "hold persons with just addresses" do
-    repo = MongoRepo.new
-    first_name = "Kylie"
-    last_name = "Minogue"
     a_person = Person.new(first_name, last_name)
 
     repo.insert(a_person)
@@ -26,54 +24,14 @@ describe "Mongo Repo" do
   end
 end
 
-describe "Sql Repo" do
-  it "holds the persons sent" do
-    repo = SqlRepo.new
-    first_name = "Kylie"
-    last_name = "Minogue"
-    a_person = Person.new(first_name, last_name)
-    a_person.add_address(PersonFactory.fake_address)
-
-    repo.insert(a_person)
-    retrieved = repo.read(first_name, last_name)
-
-    expect(retrieved).to eql(a_person)
-  end
-  it "hold persons with just addresses" do
-    repo = SqlRepo.new
-    first_name = "Kylie"
-    last_name = "Minogue"
-    a_person = Person.new(first_name, last_name)
-
-    repo.insert(a_person)
-    retrieved = repo.read(first_name, last_name)
-
-    expect(retrieved).to eql(a_person)
-  end
+describe MongoRepo do
+  it_behaves_like "a repo"
 end
 
-describe "Mixed Repo" do
-  it "holds the persons sent" do
-    repo = MixedRepo.new
-    first_name = "Kylie"
-    last_name = "Minogue"
-    a_person = Person.new(first_name, last_name)
-    a_person.add_address(PersonFactory.fake_address)
+describe SqlRepo do
+  it_behaves_like "a repo"
+end
 
-    repo.insert(a_person)
-    retrieved = repo.read(first_name, last_name)
-
-    expect(retrieved).to eql(a_person)
-  end
-  it "hold persons with just addresses" do
-    repo = MixedRepo.new
-    first_name = "Kylie"
-    last_name = "Minogue"
-    a_person = Person.new(first_name, last_name)
-
-    repo.insert(a_person)
-    retrieved = repo.read(first_name, last_name)
-
-    expect(retrieved).to eql(a_person)
-  end
+describe MixedRepo do
+  it_behaves_like "a repo"
 end
