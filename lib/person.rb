@@ -6,23 +6,15 @@ class Person
 		@variable_states = {}
 	end
 
-	def email=(email)
-		@variable_states[:email] = email
+	[:email, :phone, :credit_card, :title].each do |state|
+		define_method(state) { return @variable_states[state] }
+		writer = state.to_s + "="
+		define_method(writer) do |value|
+		  @variable_states[state] = value
+		end
 	end
 
-	def phone=(phone)
-		@variable_states[:phone] = phone
-	end
-
-	def credit_card=(credit_card)
-		@variable_states[:credit_card] = credit_card
-	end
-
-	def title=(title)
-		@variable_states[:title] = title
-	end
-
-	def add_address(address)
+	def add_address address
 		@variable_states[:addresses] ||= []
 		@variable_states[:addresses] << address
 	end

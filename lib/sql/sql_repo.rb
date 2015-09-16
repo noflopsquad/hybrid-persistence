@@ -140,19 +140,19 @@ SQL
 		end
 
 		def phone
-			@person.variable_states[:phone]
+			@person.phone
 		end
 
 		def email
-			@person.variable_states[:email]
+			@person.email
 		end
 
 		def title
-			@person.variable_states[:title]
+			@person.title
 		end
 
 		def credit_card
-			@person.variable_states[:credit_card]
+			@person.credit_card
 		end
 
 		def first_name
