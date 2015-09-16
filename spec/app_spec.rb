@@ -15,13 +15,6 @@ shared_examples_for "a repo" do
     expect(retrieved).to eql(a_person)
   end
 
-  it "holds people without addresses" do
-    repo.insert(a_person)
-    retrieved = repo.read(first_name, last_name)
-
-    expect(retrieved).to eql(a_person)
-  end
-
   describe "holds people with variable states" do
     it "email" do
       email = "email@example.com"
@@ -61,6 +54,19 @@ shared_examples_for "a repo" do
       retrieved = repo.read(first_name, last_name)
 
       expect(retrieved.title).to eql(title)
+    end
+
+    it "addresses" do
+      street_name = "Gran Vía"
+      street_address = "Valencia"
+      address = Address.new(street_name, street_address)
+      a_person.add_address(address)
+
+      repo.insert(a_person)
+      retrieved = repo.read(first_name, last_name)
+
+      expect(retrieved.has_address?(street_name, street_address)).to be_truthy
+      expect(retrieved.has_address?("Francesc", "Barcelona")).to be_falsy
     end
   end
 end

@@ -25,6 +25,10 @@ class Person
 		same_first && same_last
 	end
 
+	def has_address? street_name, street_address
+		@variable_states[:addresses].include?(Address.new(street_name, street_address))
+	end
+
 	protected
 	attr_reader :first_name, :last_name, :variable_states
 end
