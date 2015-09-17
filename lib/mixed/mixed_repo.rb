@@ -24,6 +24,11 @@ class MixedRepo
     person
   end
 
+  def update person
+    accessible = AccessiblePerson.new(person)
+    @people.update(accessible)
+  end
+
   private
 
   def add_addresses person, addresses

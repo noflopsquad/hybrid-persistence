@@ -22,6 +22,15 @@ class MongoRepo
 		person
 	end
 
+	def update person
+		serializable_person = SerializablePerson.new(person)
+		person_hash = serializable_person.to_h
+		@mongo[:people].find_one_and_update(
+			{ first_name: person_hash[:first_name],
+				last_name: person_hash[:last_name] 
+				}, person_hash)
+	end
+
 	private
 
 	def add_addresses person, addresses

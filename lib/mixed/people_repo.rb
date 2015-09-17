@@ -17,12 +17,26 @@ class PeopleRepo
 		retrieve_person(first_name, last_name)
 	end
 
+	def update person
+		remove_state(person)
+		persist_state(person)
+	end
+
 	private
+
+	def collection
+		@mongo[:person_states]
+	end
+
+	def remove_state person
+		person_identity = PersonIdentity.new(person.first_name, person.last_name).hash
+		collection.find_one_and_delete({from: person_identity})
+	end
 
 	def retrieve_person first_name, last_name
 		person = Person.new(first_name, last_name)
 		person_identity = PersonIdentity.new(first_name, last_name).hash
-		state = @mongo[:person_states].find(from: person_identity).first
+		state = collection.find(from: person_identity).first
 		person.email = state[:email]
 		person.phone = state[:phone]
 		person.title = state[:title]
@@ -49,6 +63,6 @@ class PeopleRepo
 	def persist_state person
 		identified_state = person.variable_states.merge(from: person.identity)
 		identified_state.delete(:addresses)
-		@mongo[:person_states].insert_one(identified_state)
+		collection.insert_one(identified_state)
 	end
 end

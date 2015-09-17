@@ -26,6 +26,15 @@ class SqlRepo
 		person
 	end
 
+	def update person
+		query = """
+			UPDATE people SET phone=?, title=? WHERE first_name=? AND last_name=?
+		"""
+		ripped_person = RippedPerson.new(person)
+		data = [ripped_person.phone, ripped_person.title, ripped_person.first_name, ripped_person.last_name]
+		@db.execute(query, data)
+	end
+
 	private
 
 	def extract_id person_descriptor

@@ -5,4 +5,4 @@
 ## TECHNICAL DEBT
   - set state attributes to domain person
   - get rid of sql query strings on repos
-  - still need repository wrappers?
+  - use identities to avoid data clump

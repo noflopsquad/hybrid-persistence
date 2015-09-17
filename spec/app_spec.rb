@@ -83,6 +83,32 @@ shared_examples_for "a repo" do
       expect(retrieved.retrieve_address(street_name, street_address).city).to eq(city)
     end
   end
+
+  describe "updates people" do
+    it "phone" do
+      a_person.phone = '999988887777'
+      repo.insert(a_person)
+      updated_phone = "111122223333"
+      a_person.phone = updated_phone
+      
+      repo.update(a_person)
+
+      retrieved = repo.read(first_name, last_name)
+      expect(retrieved.phone).to eq(updated_phone)
+    end
+
+    it "title" do
+      a_person.title = 'Ms'
+      repo.insert(a_person)
+      updated_title = "Mrs"
+      a_person.title = updated_title
+
+      repo.update(a_person)
+
+      retrieved = repo.read(first_name, last_name)
+      expect(retrieved.title).to eq(updated_title)
+    end
+  end
 end
 
 
