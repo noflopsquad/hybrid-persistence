@@ -29,6 +29,12 @@ class Person
 		@variable_states[:addresses].include?(Address.new(street_name, street_address))
 	end
 
+	def retrieve_address street_name, street_address
+		@variable_states[:addresses].find do |address|
+			address.eql?(Address.new(street_name, street_address))
+		end
+	end
+
 	protected
 	attr_reader :first_name, :last_name, :variable_states
 end

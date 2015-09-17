@@ -56,10 +56,10 @@ shared_examples_for "a repo" do
       expect(retrieved.title).to eql(title)
     end
 
+    let(:street_name) { "Calle" }
+    let(:street_address) { "de la Mar" }  
+    let(:address) { Address.new(street_name, street_address) } 
     it "addresses" do
-      street_name = "Gran Vía"
-      street_address = "Valencia"
-      address = Address.new(street_name, street_address)
       a_person.add_address(address)
 
       repo.insert(a_person)
@@ -68,8 +68,24 @@ shared_examples_for "a repo" do
       expect(retrieved.has_address?(street_name, street_address)).to be_truthy
       expect(retrieved.has_address?("Francesc", "Barcelona")).to be_falsy
     end
+
+
+    it "holds addresses variable state" do
+      city = 'Valencia'
+      address.city = city
+      a_person.add_address(PersonFactory.fake_address())
+      a_person.add_address(address)
+
+
+      repo.insert(a_person)
+      retrieved = repo.read(first_name, last_name)
+
+      expect(retrieved.retrieve_address(street_name, street_address).city).to eq(city)
+    end
   end
 end
+
+
 
 describe MongoRepo do
   it_behaves_like "a repo"
