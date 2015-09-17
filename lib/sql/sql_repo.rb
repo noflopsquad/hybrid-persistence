@@ -1,3 +1,4 @@
+require 'forwardable'
 require './lib/connections'
 require './lib/not_found'
 require './lib/person'
@@ -9,9 +10,9 @@ class SqlRepo
 	end
 
 	def insert person
-		serializable_person = RippedPerson.new(person)
-		addresses = serializable_person.addresses
-		persist_person(serializable_person)
+		ripped_person = RippedPerson.new(person)
+		addresses = ripped_person.addresses
+		persist_person(ripped_person)
 		person_id = @db.last_insert_row_id
 		persist_addresses(addresses, person_id)
 	end
@@ -112,24 +113,20 @@ SQL
 	end
 
 	class RippedAddress < Address
+		extend Forwardable
+
+		def_delegators :@address, :street_name, :street_address, :city
+
 		def initialize(address)
 			@address = address
-		end
-
-		def street_name
-			@address.street_name
-		end
-
-		def street_address
-			@address.street_address
-		end
-
-		def city
-			@address.variable_states[:city]
 		end
 	end
 
 	class RippedPerson < Person
+		extend Forwardable
+
+		def_delegators :@person, :phone, :email, :title, :credit_card, :first_name, :last_name
+		
 		def initialize(person)
 			@person = person
 		end
@@ -138,30 +135,5 @@ SQL
 			return [] if @person.variable_states[:addresses].nil?
 			@person.variable_states[:addresses]
 		end
-
-		def phone
-			@person.phone
-		end
-
-		def email
-			@person.email
-		end
-
-		def title
-			@person.title
-		end
-
-		def credit_card
-			@person.credit_card
-		end
-
-		def first_name
-			@person.first_name
-		end
-
-		def last_name
-			@person.last_name
-		end
 	end
-
 end

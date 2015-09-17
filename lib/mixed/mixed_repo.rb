@@ -1,3 +1,4 @@
+require 'forwardable'
 require './lib/mixed/people_repo'
 require './lib/mixed/addresses_repo'
 require './lib/mixed/person_identity'
@@ -39,24 +40,16 @@ class MixedRepo
   end
 
   class AccessiblePerson < Person
+    extend Forwardable
+
+    def_delegators :@person, :first_name, :last_name, :variable_states
+
     def initialize(person)
       @person = person
     end
 
     def identity
       PersonIdentity.new(first_name, last_name).hash
-    end
-
-    def first_name
-      @person.first_name
-    end
-
-    def last_name
-      @person.last_name
-    end
-
-    def variable_states
-      @person.variable_states
     end
 
     def addresses
@@ -66,24 +59,16 @@ class MixedRepo
   end
 
   class AccessibleAddress < Address
+    extend Forwardable
+
+    def_delegators :@address, :street_name, :street_address, :variable_states
+
     def initialize address
       @address = address
     end
 
     def identity
       AddressIdentity.new(street_name, street_address).hash
-    end
-
-    def street_name
-      @address.street_name
-    end
-
-    def street_address
-      @address.street_address
-    end
-
-    def variable_states
-      @address.variable_states
     end
   end
 end
