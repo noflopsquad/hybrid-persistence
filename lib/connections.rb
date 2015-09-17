@@ -2,6 +2,7 @@ require 'sqlite3'
 require 'mongo'
 
 class Connections
+  ENV['RACK_ENV'] = ENV['RACK_ENV'] || 'development'
 	@@sql = SQLite3::Database.new("sqlite_#{ENV['RACK_ENV']}.db")
   @@sql.results_as_hash = true
   
