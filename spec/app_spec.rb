@@ -11,7 +11,7 @@ shared_examples_for "a repo" do
   let(:credit_card) {"12309823049823"}
   let (:person) {
     a_person.with_first_name(first_name).
-    and_last_name(last_name).with_email(email).
+    with_last_name(last_name).with_email(email).
     with_phone(phone).with_title(title).
     with_credit_card(credit_card).build()
   }
@@ -21,7 +21,7 @@ shared_examples_for "a repo" do
   let (:city) {"Barcelona"}
   let (:address) {
     an_address.with_street_name(street_name).
-    and_street_address(street_address).in(city).build()
+    with_street_address(street_address).in(city).build()
   }
 
   it "holds people sent" do

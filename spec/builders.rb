@@ -9,7 +9,7 @@ class PersonBuilder
     self
   end
 
-  def and_last_name last_name
+  def with_last_name last_name
     @last_name = last_name
     self
   end
@@ -62,7 +62,7 @@ class AddressBuilder
     self
   end
 
-  def and_street_address street_address
+  def with_street_address street_address
     @street_address = street_address
     self
   end
