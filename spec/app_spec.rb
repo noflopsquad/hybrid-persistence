@@ -135,6 +135,7 @@ shared_examples_for "a repo" do
 
     describe "addresses" do
       it "changing existing addresses" do
+        a_person.add_address(PersonFactory.fake_address)
         street_name = "Calle"
         street_address = "Diagonal"
         address = Address.new(street_name, street_address)

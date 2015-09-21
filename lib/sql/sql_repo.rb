@@ -29,7 +29,7 @@ class SqlRepo
   def update person
     ripped_person = RippedPerson.new(person)
     update_person(ripped_person)
-    update_address(ripped_person)
+    update_addresses(ripped_person)
   end
 
   def delete person
@@ -69,21 +69,25 @@ class SqlRepo
     @db.execute(command, data)
   end
 
-  def update_address person
-    return if person.addresses.empty?
-
-    ripped_address = RippedAddress.new(person.addresses[0])
+  def update_addresses person
     id = retrieve_person_id(person)
 
-    if address_exists?(id)
-      command = """
+    person.addresses.each do |address|
+      ripped_address = RippedAddress.new(address)
+      if address_exists?(id)
+        update_address(ripped_address, id)
+      else
+        persist_address(ripped_address, id)
+      end
+    end
+  end
+
+  def update_address address, id
+    command = """
         UPDATE addresses SET city=? WHERE person_id=?
         """
-      data = [ripped_address.city, id]
-      @db.execute(command, data)
-    else
-      persist_address(ripped_address, id)
-    end
+    data = [address.city, id]
+    @db.execute(command, data)
   end
 
   def persist_address address, id
