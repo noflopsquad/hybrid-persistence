@@ -18,8 +18,7 @@ class PeopleRepo
   end
 
   def update person
-    remove_state(person)
-    persist_state(person)
+    update_state(person)
   end
 
   def delete person
@@ -33,6 +32,14 @@ class PeopleRepo
     @mongo[:person_states]
   end
 
+  def update_state person
+    state = extract_person_state(person)
+    collection.find_one_and_update(
+      {from: person.identity},
+      state
+    )
+  end
+
   def remove_identity person
     command = """
       DELETE FROM mixed_people WHERE first_name = ? AND last_name = ?
@@ -42,8 +49,7 @@ class PeopleRepo
   end
 
   def remove_state person
-    person_identity = PersonIdentity.new(person.first_name, person.last_name).hash
-    collection.find_one_and_delete({from: person_identity})
+    collection.find_one_and_delete({from: person.identity})
   end
 
   def retrieve_person first_name, last_name
@@ -74,8 +80,13 @@ class PeopleRepo
   end
 
   def persist_state person
-    identified_state = person.variable_states.merge(from: person.identity)
-    identified_state.delete(:addresses)
-    collection.insert_one(identified_state)
+    state = extract_person_state(person)
+    collection.insert_one(state)
+  end
+
+  def extract_person_state person
+    state = person.variable_states.merge(from: person.identity)
+    state.delete(:addresses)
+    state
   end
 end

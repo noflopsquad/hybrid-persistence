@@ -32,9 +32,16 @@ class AddressesRepo
 
   private
 
+  def collection
+    @mongo[:address_states]
+  end
+
   def update_state address
-    remove_state(address)
-    persist_state(address)
+    state = address.variable_states.merge(from: address.identity)
+    collection.find_one_and_update(
+      {from: address.identity},
+      state
+    )
   end
 
   def address_exists? address, person_identity
@@ -52,7 +59,7 @@ class AddressesRepo
 
   def remove_state address
     address_identity = AddressIdentity.new(address.street_name, address.street_address).hash
-    @mongo[:address_states].find_one_and_delete({from: address_identity})
+    collection.find_one_and_delete({from: address_identity})
   end
 
   def build_addresses descriptors
@@ -64,7 +71,7 @@ class AddressesRepo
   def build_address descriptor
     address_identity = AddressIdentity.new(descriptor["street_name"], descriptor["street_address"])
     address = Address.new(address_identity.street_name, address_identity.street_address)
-    state = @mongo[:address_states].find(from: address_identity.hash).first
+    state = collection.find(from: address_identity.hash).first
     address.city = state[:city]
     address
   end
@@ -73,7 +80,6 @@ class AddressesRepo
     query = """
       SELECT street_name, street_address FROM mixed_addresses WHERE person_id=?
       """
-
     @sql.execute(query, person_identity)
   end
 
@@ -91,7 +97,7 @@ class AddressesRepo
   end
 
   def persist_state address
-    identified_state = address.variable_states.merge(from: address.identity)
-    @mongo[:address_states].insert_one(identified_state)
+    state = address.variable_states.merge(from: address.identity)
+    collection.insert_one(state)
   end
 end
