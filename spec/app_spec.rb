@@ -4,7 +4,7 @@ shared_examples_for "a repo" do
   let(:repo) { described_class.new }
   let(:first_name) { "Kylie" }
   let(:last_name) { "Minogue" }
-  let(:a_person) { Person.new(first_name, last_name) } 
+  let(:a_person) { Person.new(first_name, last_name) }
 
   it "holds people sent" do
     a_person.add_address(PersonFactory.fake_address)
@@ -57,8 +57,8 @@ shared_examples_for "a repo" do
     end
 
     let(:street_name) { "Calle" }
-    let(:street_address) { "de la Mar" }  
-    let(:address) { Address.new(street_name, street_address) } 
+    let(:street_address) { "de la Mar" }
+    let(:address) { Address.new(street_name, street_address) }
     it "addresses" do
       a_person.add_address(address)
 
@@ -69,13 +69,11 @@ shared_examples_for "a repo" do
       expect(retrieved.has_address?("Francesc", "Barcelona")).to be_falsy
     end
 
-
     it "holds addresses variable state" do
       city = 'Valencia'
       address.city = city
       a_person.add_address(PersonFactory.fake_address())
       a_person.add_address(address)
-
 
       repo.insert(a_person)
       retrieved = repo.read(first_name, last_name)
@@ -90,7 +88,7 @@ shared_examples_for "a repo" do
       repo.insert(a_person)
       updated_phone = "111122223333"
       a_person.phone = updated_phone
-      
+
       repo.update(a_person)
 
       retrieved = repo.read(first_name, last_name)
@@ -107,6 +105,64 @@ shared_examples_for "a repo" do
 
       retrieved = repo.read(first_name, last_name)
       expect(retrieved.title).to eq(updated_title)
+    end
+
+    it "credit card" do
+      card = "12309823049823"
+      a_person.credit_card = card
+      repo.insert(a_person)
+      updated_card = "50252067239763"
+      a_person.credit_card = updated_card
+
+      repo.update(a_person)
+
+      retrieved = repo.read(first_name, last_name)
+      expect(retrieved.credit_card).to eql(updated_card)
+    end
+
+    it "email" do
+      email = "hola@hola.com"
+      a_person.email = email
+      repo.insert(a_person)
+      updated_email = "adios@hola.com"
+      a_person.email = updated_email
+
+      repo.update(a_person)
+
+      retrieved = repo.read(first_name, last_name)
+      expect(retrieved.email).to eql(updated_email)
+    end
+
+    describe "addresses" do
+      it "changing existing addresses" do
+        street_name = "Calle"
+        street_address = "Diagonal"
+        address = Address.new(street_name, street_address)
+        address.city = "Barcelona"
+        a_person.add_address(address)
+        repo.insert(a_person)
+        updated_city = "Valencia"
+        address.city = updated_city
+
+        repo.update(a_person)
+
+        retrieved = repo.read(first_name, last_name)
+        expect(retrieved.retrieve_address(street_name, street_address).city).to eq(updated_city)
+      end
+
+      it "when address doesn't exist, it's inserted" do
+        repo.insert(a_person)
+        street_name = "Calle"
+        street_address = "Diagonal"
+        address = Address.new(street_name, street_address)
+        address.city = "Barcelona"
+        a_person.add_address(address)
+
+        repo.update(a_person)
+
+        retrieved = repo.read(first_name, last_name)
+        expect(retrieved.retrieve_address(street_name, street_address)).to eq(address)
+      end
     end
   end
 end

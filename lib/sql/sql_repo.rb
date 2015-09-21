@@ -27,15 +27,73 @@ class SqlRepo
   end
 
   def update person
-    query = """
-		UPDATE people SET phone=?, title=? WHERE first_name=? AND last_name=?
-		"""
     ripped_person = RippedPerson.new(person)
-    data = [ripped_person.phone, ripped_person.title, ripped_person.first_name, ripped_person.last_name]
-    @db.execute(query, data)
+    update_person(ripped_person)
+    update_address(ripped_person)
   end
 
   private
+
+  def update_person person
+    command = """
+      UPDATE people SET phone=?, title=?, credit_card=?, email=? WHERE first_name=? AND last_name=?
+      """
+    data = [
+      person.phone, person.title, person.credit_card,
+      person.email, person.first_name, person.last_name
+    ]
+    @db.execute(command, data)
+  end
+
+  def update_address person
+    return if person.addresses.empty?
+
+    ripped_address = RippedAddress.new(person.addresses[0])
+    id = retrieve_person_id(person)
+
+    if address_exists?(id)
+      command = """
+        UPDATE addresses SET city=? WHERE person_id=?
+        """
+      data = [ripped_address.city, id]
+      @db.execute(command, data)
+    else
+      persist_address(ripped_address, id)
+    end
+  end
+
+  def persist_address address, id
+    command = """
+      INSERT INTO addresses(street_name, street_address, city, person_id)
+      VALUES (?, ?, ?, ?)
+      """
+    data = [
+      address.street_name,
+      address.street_address,
+      address.city,
+      id
+    ]
+    @db.execute(command, data)
+  end
+
+  def address_exists? id
+    query = """
+      SELECT COUNT(*) FROM addresses WHERE person_id=?
+      """
+    data = [id]
+    result = @db.execute(query, data)
+    result.first[0] != 0
+  end
+
+  def retrieve_person_id person
+    query = """
+      SELECT id FROM people WHERE first_name=? AND last_name=?
+      """
+    data = [person.first_name, person.last_name]
+    records = @db.execute(query, data)
+    raise NotFound.new if records.empty?
+    records.first["id"]
+  end
 
   def extract_id person_descriptor
     person_descriptor["id"]
@@ -43,8 +101,8 @@ class SqlRepo
 
   def retrieve_person first_name, last_name
     query = """
-		SELECT * FROM people WHERE first_name = ? AND last_name = ?
-		"""
+      SELECT * FROM people WHERE first_name = ? AND last_name = ?
+      """
     records = @db.execute(query, [first_name, last_name])
     raise NotFound.new if records.empty?
     records.first
@@ -73,10 +131,10 @@ class SqlRepo
   end
 
   def retrieve_addresses_of person_id
-    addresses_query = """
-		SELECT * FROM addresses WHERE person_id = ?
-		"""
-    @db.execute(addresses_query, [person_id])
+    query = """
+      SELECT * FROM addresses WHERE person_id = ?
+      """
+    @db.execute(query, [person_id])
   end
 
   def to_address descriptor
@@ -86,10 +144,10 @@ class SqlRepo
   end
 
   def persist_person(person)
-    query = """
-		INSERT INTO people (first_name, last_name, phone, email, title, credit_card)
-		VALUES (?, ?, ?, ?, ?, ?)
-		"""
+    command = """
+      INSERT INTO people (first_name, last_name, phone, email, title, credit_card)
+      VALUES (?, ?, ?, ?, ?, ?)
+      """
 
     data = [
       person.first_name,
@@ -100,24 +158,13 @@ class SqlRepo
       person.credit_card
     ]
 
-    @db.execute(query, data)
+    @db.execute(command, data)
   end
 
   def persist_addresses(addresses, person_id)
-    query ="""
-		INSERT INTO addresses(street_name, street_address, city, person_id)
-		VALUES (?, ?, ?, ?)
-		"""
-
     addresses.each do |address|
-      serializable_address = RippedAddress.new(address)
-      data = [
-        serializable_address.street_name,
-        serializable_address.street_address,
-        serializable_address.city,
-        person_id
-      ]
-      @db.execute(query, data)
+      ripped_address = RippedAddress.new(address)
+      persist_address(ripped_address, person_id)
     end
   end
 

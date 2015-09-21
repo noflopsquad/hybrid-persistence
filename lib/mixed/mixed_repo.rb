@@ -27,6 +27,7 @@ class MixedRepo
   def update person
     accessible = AccessiblePerson.new(person)
     @people.update(accessible)
+    update_adresses(accessible)
   end
 
   private
@@ -34,6 +35,13 @@ class MixedRepo
   def add_addresses person, addresses
     addresses.each do |address|
       person.add_address(address)
+    end
+  end
+
+  def update_adresses person
+    person.addresses.each do |address|
+      accessible = AccessibleAddress.new(address)
+      @addresses.update(accessible, person.identity)
     end
   end
 
