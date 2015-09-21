@@ -73,12 +73,16 @@ class SqlRepo
     id = retrieve_person_id(person)
 
     person.addresses.each do |address|
-      ripped_address = RippedAddress.new(address)
-      if address_exists?(id)
-        update_address(ripped_address, id)
-      else
-        persist_address(ripped_address, id)
-      end
+      change(address, id)
+    end
+  end
+
+  def change address, id
+    ripped_address = RippedAddress.new(address)
+    if address_exists?(id)
+      update_address(ripped_address, id)
+    else
+      persist_address(ripped_address, id)
     end
   end
 
