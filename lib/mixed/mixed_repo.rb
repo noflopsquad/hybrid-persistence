@@ -32,8 +32,8 @@ class MixedRepo
 
   def delete person
     accessible = AccessiblePerson.new(person)
-    delete_addresses(accessible)
     @people.delete(accessible)
+    delete_addresses(accessible)
   end
 
   private
