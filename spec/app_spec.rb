@@ -1,77 +1,73 @@
 require 'spec_helper'
+require 'builders'
 
 shared_examples_for "a repo" do
   let(:repo) { described_class.new }
   let(:first_name) { "Kylie" }
   let(:last_name) { "Minogue" }
-  let(:a_person) { Person.new(first_name, last_name) }
+  let(:title) {"Mrs."}
+  let(:phone) {"888777333666"}
+  let(:email) {"email@example.com"}
+  let(:credit_card) {"12309823049823"}
+  let (:person) {
+    a_person.with_first_name(first_name).
+    and_last_name(last_name).with_email(email).
+    with_phone(phone).with_title(title).
+    with_credit_card(credit_card).build()
+  }
+  let (:a_random_address) {PersonFactory.fake_address()}
+  let (:street_name) {"Calle"}
+  let (:street_address) {"Diagonal"}
+  let (:city) {"Barcelona"}
+  let (:address) {
+    an_address.with_street_name(street_name).
+    and_street_address(street_address).in(city).build()
+  }
 
   it "holds people sent" do
-    a_person.add_address(PersonFactory.fake_address)
+    person.add_address(a_random_address)
 
-    repo.insert(a_person)
+    repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
-    expect(retrieved).to eql(a_person)
+    expect(retrieved).to eql(person)
   end
 
   it "persists people properly" do
-    title = "Mrs."
-    phone = "888777333666"
-    email = "email@example.com"
-    card = "12309823049823"
-    a_person.email = email
-    a_person.phone = phone
-    a_person.credit_card = card
-    a_person.title = title
-
-    repo.insert(a_person)
+    repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
     expect(retrieved.email).to eql(email)
     expect(retrieved.phone).to eql(phone)
-    expect(retrieved.credit_card).to eql(card)
+    expect(retrieved.credit_card).to eql(credit_card)
     expect(retrieved.title).to eql(title)
   end
 
   it "persists people addresses" do
-    street_name = "Calle"
-    street_address = "de la Mar"
-    address = Address.new(street_name, street_address)
-    city = 'Valencia'
-    address.city = city
-    a_person.add_address(PersonFactory.fake_address())
-    a_person.add_address(address)
+    person.add_address(a_random_address)
+    person.add_address(address)
 
-    repo.insert(a_person)
+    repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
     expect(retrieved.has_address?(street_name, street_address)).to be_truthy
-    expect(retrieved.has_address?("Francesc", "Barcelona")).to be_falsy
+    expect(retrieved.has_address?("Avenida", "Valencia")).to be_falsy
     expect(retrieved.retrieve_address(street_name, street_address).city).to eq(city)
   end
 
   describe "when update" do
-    before(:each) do
-      a_person.phone = '999988887777'
-      a_person.title = 'Ms'
-      a_person.credit_card = "569561659652395"
-      a_person.email = "email@aa.com"
-    end
-
     it "updates people" do
-      repo.insert(a_person)
-
-      updated_phone = "111122223333"
-      a_person.phone = updated_phone
-      updated_title = "Mrs"
-      a_person.title = updated_title
+      repo.insert(person)
       updated_card = "50252067239763"
-      a_person.credit_card = updated_card
+      updated_title = "Mrs"
+      updated_phone = "111122223333"
       updated_email = "adios@hola.com"
-      a_person.email = updated_email
 
-      repo.update(a_person)
+      person.phone = updated_phone
+      person.title = updated_title
+      person.credit_card = updated_card
+      person.email = updated_email
+      repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
       expect(retrieved.phone).to eq(updated_phone)
@@ -81,31 +77,23 @@ shared_examples_for "a repo" do
     end
 
     it "changes existing address" do
-      a_person.add_address(PersonFactory.fake_address)
-      street_name = "Calle"
-      street_address = "Diagonal"
-      address = Address.new(street_name, street_address)
-      address.city = "Barcelona"
-      a_person.add_address(address)
-      repo.insert(a_person)
+      person.add_address(a_random_address)
+      person.add_address(address)
+      repo.insert(person)
       updated_city = "Valencia"
-      address.city = updated_city
 
-      repo.update(a_person)
+      address.city = updated_city
+      repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
       expect(retrieved.retrieve_address(street_name, street_address).city).to eq(updated_city)
     end
 
     it "inserts non existing address" do
-      repo.insert(a_person)
-      street_name = "Calle"
-      street_address = "Diagonal"
-      address = Address.new(street_name, street_address)
-      address.city = "Barcelona"
-      a_person.add_address(address)
+      repo.insert(person)
+      person.add_address(address)
 
-      repo.update(a_person)
+      repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
       expect(retrieved.retrieve_address(street_name, street_address)).to eq(address)
@@ -114,9 +102,9 @@ shared_examples_for "a repo" do
 
   describe "deletes people" do
     it "when it already exists, it's deleted" do
-      repo.insert(a_person)
+      repo.insert(person)
 
-      repo.delete(a_person)
+      repo.delete(person)
 
       expect {repo.read(first_name, last_name)}.to raise_error(NotFound)
     end
@@ -133,4 +121,12 @@ end
 
 describe MixedRepo do
   it_behaves_like "a repo"
+end
+
+def an_address
+  AddressBuilder.new
+end
+
+def a_person
+  PersonBuilder.new
 end
