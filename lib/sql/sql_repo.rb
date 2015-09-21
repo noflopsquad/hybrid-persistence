@@ -32,7 +32,31 @@ class SqlRepo
     update_address(ripped_person)
   end
 
+  def delete person
+    ripped_person = RippedPerson.new(person)
+    delete_addresses(ripped_person)
+    delete_person(ripped_person)
+  end
+
   private
+
+  def delete_person person
+    id = retrieve_person_id(person)
+    command = """
+      DELETE FROM people WHERE id=?
+      """
+    data = [id]
+    @db.execute(command, data)
+  end
+
+  def delete_addresses person
+    id = retrieve_person_id(person)
+    command = """
+      DELETE FROM addresses WHERE person_id=?
+      """
+    data = [id]
+    @db.execute(command, data)
+  end
 
   def update_person person
     command = """

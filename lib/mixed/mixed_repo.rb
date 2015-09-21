@@ -30,7 +30,20 @@ class MixedRepo
     update_adresses(accessible)
   end
 
+  def delete person
+    accessible = AccessiblePerson.new(person)
+    delete_addresses(accessible)
+    @people.delete(accessible)
+  end
+
   private
+
+  def delete_addresses person
+    person.addresses.each do |address|
+      accessible = AccessibleAddress.new(address)
+      @addresses.delete(address)
+    end
+  end
 
   def add_addresses person, addresses
     addresses.each do |address|

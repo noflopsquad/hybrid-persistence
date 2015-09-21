@@ -165,9 +165,17 @@ shared_examples_for "a repo" do
       end
     end
   end
+
+  describe "deletes people" do
+    it "when it already exists, it's deleted" do
+      repo.insert(a_person)
+
+      repo.delete(a_person)
+
+      expect {repo.read(first_name, last_name)}.to raise_error(NotFound)
+    end
+  end
 end
-
-
 
 describe MongoRepo do
   it_behaves_like "a repo"

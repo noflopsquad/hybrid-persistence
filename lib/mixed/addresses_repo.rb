@@ -25,6 +25,11 @@ class AddressesRepo
     end
   end
 
+  def delete address
+    remove_state(address)
+    remove_identity(address)
+  end
+
   private
 
   def update_state address
@@ -35,6 +40,14 @@ class AddressesRepo
   def address_exists? address, person_identity
     addresses = read(person_identity)
     addresses.include?(address)
+  end
+
+  def remove_identity address
+    command = """
+      DELETE FROM mixed_addresses WHERE street_name=?, street_address=?
+      """
+    data = [address.street_name, address.street_address]
+    @sql.execute(command, data)
   end
 
   def remove_state address
@@ -58,23 +71,22 @@ class AddressesRepo
 
   def retrieve_descriptors person_identity
     query = """
-	  SELECT street_name, street_address FROM mixed_addresses WHERE person_id=?
-	  """
+      SELECT street_name, street_address FROM mixed_addresses WHERE person_id=?
+      """
 
     @sql.execute(query, person_identity)
   end
 
   def persist_identity address, person_identity
     command = """
-	  INSERT INTO mixed_addresses (street_name, street_address, person_id)
-	  VALUES (?, ?, ?)
-	  """
+      INSERT INTO mixed_addresses (street_name, street_address, person_id)
+      VALUES (?, ?, ?)
+      """
     data = [
       address.street_name,
       address.street_address,
       person_identity
     ]
-
     @sql.execute(command, data)
   end
 

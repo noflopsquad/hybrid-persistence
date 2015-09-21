@@ -22,10 +22,23 @@ class PeopleRepo
     persist_state(person)
   end
 
+  def delete person
+    remove_state(person)
+    remove_identity(person)
+  end
+
   private
 
   def collection
     @mongo[:person_states]
+  end
+
+  def remove_identity person
+    command = """
+      DELETE FROM mixed_people WHERE first_name = ? AND last_name = ?
+      """
+    data = [person.first_name, person.last_name]
+    @sql.execute(command, data)
   end
 
   def remove_state person
@@ -46,8 +59,8 @@ class PeopleRepo
 
   def check_existence! first_name, last_name
     query = """
-	  SELECT COUNT(*) FROM mixed_people WHERE first_name = ? AND last_name = ?
-	  """
+      SELECT COUNT(*) FROM mixed_people WHERE first_name = ? AND last_name = ?
+      """
     records = @sql.execute(query, [first_name, last_name])
     raise NotFound.new if records[0][0] == 0
   end
@@ -55,8 +68,8 @@ class PeopleRepo
   def persist_identity person
     data = [person.first_name, person.last_name]
     command = """
-	  INSERT INTO mixed_people (first_name, last_name) VALUES (?, ?)
-	  """
+      INSERT INTO mixed_people (first_name, last_name) VALUES (?, ?)
+      """
     @sql.execute(command, data)
   end
 
