@@ -75,7 +75,9 @@ class AddressBuilder
   def build
     raise ArgumentError.new("Missing Address invariants") if missing_invariant?
 
-    address = Address.new(@street_name, @street_address)
+    address = TestableAddress.new(
+      Address.new(@street_name, @street_address)
+    )
     address.city = @city unless @city.nil?
     address
   end

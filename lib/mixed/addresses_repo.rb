@@ -70,10 +70,12 @@ class AddressesRepo
 
   def build_address descriptor
     address_identity = AddressIdentity.new(descriptor["street_name"], descriptor["street_address"])
-    address = Address.new(address_identity.street_name, address_identity.street_address)
     state = collection.find(from: address_identity.hash).first
-    address.city = state[:city]
-    address
+
+    Address.create_from_descriptor(
+      state.merge(
+        {"street_name" => descriptor["street_name"],
+         "street_address" => descriptor["street_address"]}))
   end
 
   def retrieve_descriptors person_identity

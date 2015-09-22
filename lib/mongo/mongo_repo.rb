@@ -51,9 +51,7 @@ class MongoRepo
 
   def build_addresses descriptor
     descriptor[:addresses].map do |address_descriptor|
-      address = Address.new(address_descriptor[:street_name], address_descriptor[:street_address])
-      address.city = address_descriptor[:city]
-      address
+      Address.create_from_descriptor(address_descriptor)
     end
   end
 

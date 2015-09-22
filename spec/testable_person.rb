@@ -12,9 +12,10 @@ class TestablePerson < Person
   end
 
   def retrieve_address street_name, street_address
-    @person.variable_states[:addresses].find do |address|
+    address = @person.variable_states[:addresses].find do |address|
       address.eql?(Address.new(street_name, street_address))
     end
+    TestableAddress.new(address)
   end
 
   [:email, :phone, :credit_card, :title].each do |state|

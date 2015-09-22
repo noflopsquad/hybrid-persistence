@@ -2,6 +2,7 @@ require 'faker'
 require './lib/person'
 require './lib/address'
 require './spec/testable_person'
+require './spec/testable_address'
 
 class PersonFactory
   def self.fake_it
@@ -21,7 +22,9 @@ class PersonFactory
   end
 
   def self.fake_address
-    address = Address.new Faker::Address.street_name, Faker::Address.street_address
+    address = TestableAddress.new(
+      Address.new Faker::Address.street_name, Faker::Address.street_address
+    )
     address.city = Faker::Address.city
     address
   end

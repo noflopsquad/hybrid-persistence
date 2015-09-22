@@ -166,9 +166,7 @@ class SqlRepo
   end
 
   def to_address descriptor
-    address = Address.new(descriptor["street_name"], descriptor["street_address"])
-    address.city = descriptor["city"]
-    address
+    Address.create_from_descriptor(descriptor)
   end
 
   def persist_person(person)
