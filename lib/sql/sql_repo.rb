@@ -60,7 +60,8 @@ class SqlRepo
 
   def update_person person
     command = """
-      UPDATE people SET phone=?, title=?, credit_card=?, email=? WHERE first_name=? AND last_name=?
+      UPDATE people SET phone=?, title=?, credit_card=?, email=?
+      WHERE first_name=? AND last_name=?
       """
     data = [
       person.phone, person.title, person.credit_card,
@@ -141,12 +142,7 @@ class SqlRepo
   end
 
   def to_person descriptor
-    person = Person.new(descriptor["first_name"], descriptor["last_name"])
-    person.title = descriptor["title"]
-    person.credit_card = descriptor["credit_card"]
-    person.phone = descriptor["phone"]
-    person.email = descriptor["email"]
-    person
+    Person.create_from_descriptor(descriptor)
   end
 
   def add_addresses person, addresses
@@ -203,17 +199,21 @@ class SqlRepo
   class RippedAddress < Address
     extend Forwardable
 
-    def_delegators :@address, :street_name, :street_address, :city
+    def_delegators :@address, :street_name, :street_address
 
     def initialize(address)
       @address = address
+    end
+
+    [:city].each do |state|
+      define_method(state) { return @address.variable_states[state] }
     end
   end
 
   class RippedPerson < Person
     extend Forwardable
 
-    def_delegators :@person, :phone, :email, :title, :credit_card, :first_name, :last_name
+    def_delegators :@person, :first_name, :last_name
 
     def initialize(person)
       @person = person
@@ -222,6 +222,10 @@ class SqlRepo
     def addresses
       return [] if @person.variable_states[:addresses].nil?
       @person.variable_states[:addresses]
+    end
+
+    [:email, :phone, :credit_card, :title].each do |state|
+      define_method(state) { return @person.variable_states[state] }
     end
   end
 end

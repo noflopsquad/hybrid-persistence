@@ -37,7 +37,7 @@ class PersonBuilder
   def build
     raise ArgumentError.new("Missing Person invariants") if missing_invariant?
 
-    person = Person.new(@first_name, @last_name)
+    person = TestablePerson.new(Person.new(@first_name, @last_name))
     person.title = @title unless @title.nil?
     person.email = @email unless @email.nil?
     person.credit_card = @credit_card unless @credit_card.nil?

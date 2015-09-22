@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'builders'
+require 'testable_person'
 
 shared_examples_for "a repo" do
   let(:repo) { described_class.new }
@@ -37,10 +38,11 @@ shared_examples_for "a repo" do
     repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
-    expect(retrieved.email).to eql(email)
-    expect(retrieved.phone).to eql(phone)
-    expect(retrieved.credit_card).to eql(credit_card)
-    expect(retrieved.title).to eql(title)
+    testable_person = make_testable(retrieved)
+    expect(testable_person.email).to eql(email)
+    expect(testable_person.phone).to eql(phone)
+    expect(testable_person.credit_card).to eql(credit_card)
+    expect(testable_person.title).to eql(title)
   end
 
   it "persists people addresses" do
@@ -50,9 +52,10 @@ shared_examples_for "a repo" do
     repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
-    expect(retrieved.has_address?(street_name, street_address)).to be_truthy
-    expect(retrieved.has_address?("Avenida", "Valencia")).to be_falsy
-    expect(retrieved.retrieve_address(street_name, street_address).city).to eq(city)
+    testable_person = make_testable(retrieved)
+    expect(testable_person.has_address?(street_name, street_address)).to be_truthy
+    expect(testable_person.has_address?("Avenida", "Valencia")).to be_falsy
+    expect(testable_person.retrieve_address(street_name, street_address).city).to eq(city)
   end
 
   describe "when update" do
@@ -70,10 +73,11 @@ shared_examples_for "a repo" do
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
-      expect(retrieved.phone).to eq(updated_phone)
-      expect(retrieved.title).to eq(updated_title)
-      expect(retrieved.credit_card).to eql(updated_card)
-      expect(retrieved.email).to eql(updated_email)
+      testable_person = make_testable(retrieved)
+      expect(testable_person.phone).to eq(updated_phone)
+      expect(testable_person.title).to eq(updated_title)
+      expect(testable_person.credit_card).to eql(updated_card)
+      expect(testable_person.email).to eql(updated_email)
     end
 
     it "changes existing address" do
@@ -86,7 +90,8 @@ shared_examples_for "a repo" do
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
-      expect(retrieved.retrieve_address(street_name, street_address).city).to eq(updated_city)
+      testable_person = make_testable(retrieved)
+      expect(testable_person.retrieve_address(street_name, street_address).city).to eq(updated_city)
     end
 
     it "inserts non existing address" do
@@ -96,7 +101,8 @@ shared_examples_for "a repo" do
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
-      expect(retrieved.retrieve_address(street_name, street_address)).to eq(address)
+      testable_person = make_testable(retrieved)
+      expect(testable_person.retrieve_address(street_name, street_address)).to eq(address)
     end
   end
 
@@ -129,4 +135,8 @@ end
 
 def a_person
   PersonBuilder.new
+end
+
+def make_testable(person)
+  TestablePerson.new(person)
 end

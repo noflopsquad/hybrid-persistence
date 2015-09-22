@@ -53,14 +53,11 @@ class PeopleRepo
   end
 
   def retrieve_person first_name, last_name
-    person = Person.new(first_name, last_name)
     person_identity = PersonIdentity.new(first_name, last_name).hash
     state = collection.find(from: person_identity).first
-    person.email = state[:email]
-    person.phone = state[:phone]
-    person.title = state[:title]
-    person.credit_card = state[:credit_card]
-    person
+    Person.create_from_descriptor(
+      state.merge({"first_name" => first_name, "last_name" => last_name})
+    )
   end
 
   def check_existence! first_name, last_name

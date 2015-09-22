@@ -15,7 +15,7 @@ class MongoRepo
 
   def read first_name, last_name
     person_descriptor = retrieve_person(first_name, last_name)
-    person = build_person(person_descriptor)
+    person = to_person(person_descriptor)
     addresses = build_addresses(person_descriptor)
     add_addresses(person, addresses)
     person
@@ -63,13 +63,8 @@ class MongoRepo
     person
   end
 
-  def build_person descriptor
-    person = Person.new(descriptor[:first_name], descriptor[:last_name])
-    person.email = descriptor[:email] unless descriptor[:email].nil?
-    person.phone = descriptor[:phone] unless descriptor[:phone].nil?
-    person.title = descriptor[:title] unless descriptor[:title].nil?
-    person.credit_card = descriptor[:credit_card] unless descriptor[:credit_card].nil?
-    person
+  def to_person descriptor
+    Person.create_from_descriptor(descriptor)
   end
 
   class SerializablePerson < Person
