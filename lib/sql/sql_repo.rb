@@ -124,8 +124,7 @@ class SqlRepo
       """
     data = [person.first_name, person.last_name]
     records = @db.execute(query, data)
-    raise NotFound.new if records.empty?
-    records.first["id"]
+    return records.first["id"] unless records.empty?
   end
 
   def extract_id person_descriptor

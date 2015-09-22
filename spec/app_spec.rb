@@ -114,6 +114,14 @@ shared_examples_for "a repo" do
 
       expect {repo.read(first_name, last_name)}.to raise_error(NotFound)
     end
+
+    it "is idempotent" do
+      repo.insert(person)
+
+      repo.delete(person)
+
+      expect {repo.delete(person)}.to_not raise_error
+    end
   end
 end
 
