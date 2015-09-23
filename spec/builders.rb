@@ -34,6 +34,11 @@ class PersonBuilder
     self
   end
 
+  def with_nickname nickname
+    @nickname = nickname
+    self
+  end
+
   def build
     raise ArgumentError.new("Missing Person invariants") if missing_invariant?
 
@@ -42,6 +47,7 @@ class PersonBuilder
     person.email = @email unless @email.nil?
     person.credit_card = @credit_card unless @credit_card.nil?
     person.phone = @phone unless @phone.nil?
+    person.nickname = @nickname unless @nickname.nil?
     person
   end
 

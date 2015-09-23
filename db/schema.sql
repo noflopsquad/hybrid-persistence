@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS "people" (
     "phone" TEXT,
     "email" TEXT,
     "title" TEXT,
+    "nickname" TEXT,
     "id" INTEGER PRIMARY KEY AUTOINCREMENT
 );
 CREATE TABLE IF NOT EXISTS "mixed_people" (

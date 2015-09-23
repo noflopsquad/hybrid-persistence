@@ -10,11 +10,13 @@ shared_examples_for "a repo" do
   let(:phone) {"888777333666"}
   let(:email) {"email@example.com"}
   let(:credit_card) {"12309823049823"}
+  let(:nickname) {"pepito"}
   let (:person) {
     a_person.with_first_name(first_name).
     with_last_name(last_name).with_email(email).
     with_phone(phone).with_title(title).
-    with_credit_card(credit_card).build()
+    with_credit_card(credit_card).
+    with_nickname(nickname).build()
   }
   let (:a_random_address) {PersonFactory.fake_address()}
   let (:street_name) {"Calle"}
@@ -43,6 +45,7 @@ shared_examples_for "a repo" do
     expect(testable_person.phone).to eql(phone)
     expect(testable_person.credit_card).to eql(credit_card)
     expect(testable_person.title).to eql(title)
+    expect(testable_person.nickname).to eql(nickname)
   end
 
   it "persists people addresses" do
@@ -65,11 +68,13 @@ shared_examples_for "a repo" do
       updated_title = "Mrs"
       updated_phone = "111122223333"
       updated_email = "adios@hola.com"
+      updated_nickname = "trikitrok"
 
       person.phone = updated_phone
       person.title = updated_title
       person.credit_card = updated_card
       person.email = updated_email
+      person.nickname = updated_nickname
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
@@ -78,6 +83,7 @@ shared_examples_for "a repo" do
       expect(testable_person.title).to eq(updated_title)
       expect(testable_person.credit_card).to eql(updated_card)
       expect(testable_person.email).to eql(updated_email)
+      expect(testable_person.nickname).to eql(updated_nickname)
     end
 
     it "changes existing address" do

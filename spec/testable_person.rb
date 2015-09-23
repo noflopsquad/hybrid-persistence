@@ -18,7 +18,7 @@ class TestablePerson < Person
     TestableAddress.new(address)
   end
 
-  [:email, :phone, :credit_card, :title].each do |state|
+  [:email, :phone, :credit_card, :title, :nickname].each do |state|
     define_method(state) { return @person.variable_states[state] }
     writer = state.to_s + "="
     define_method(writer) do |value|

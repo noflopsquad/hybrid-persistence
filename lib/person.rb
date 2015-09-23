@@ -23,6 +23,7 @@ class Person
     person.send(:variable_states)[:credit_card] = descriptor["credit_card"]
     person.send(:variable_states)[:phone] = descriptor["phone"]
     person.send(:variable_states)[:email] = descriptor["email"]
+    person.send(:variable_states)[:nickname] = descriptor["nickname"]
     person
   end
 

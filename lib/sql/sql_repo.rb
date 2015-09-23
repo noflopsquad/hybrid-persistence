@@ -60,14 +60,16 @@ class SqlRepo
 
   def update_person person
     command = """
-      UPDATE people SET phone=?, title=?, credit_card=?, email=?
+      UPDATE people SET phone=?, title=?, credit_card=?, email=?, nickname=?
       WHERE first_name=? AND last_name=?
       """
     data = [
       person.phone, person.title, person.credit_card,
-      person.email, person.first_name, person.last_name
+      person.email, person.nickname
     ]
-    @db.execute(command, data)
+    where = [ person.first_name, person.last_name ]
+
+    @db.execute(command, data + where)
   end
 
   def update_addresses person
@@ -170,8 +172,8 @@ class SqlRepo
 
   def persist_person(person)
     command = """
-      INSERT INTO people (first_name, last_name, phone, email, title, credit_card)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO people (first_name, last_name, phone, email, title, credit_card, nickname)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       """
 
     data = [
@@ -180,7 +182,8 @@ class SqlRepo
       person.phone,
       person.email,
       person.title,
-      person.credit_card
+      person.credit_card,
+      person.nickname
     ]
 
     @db.execute(command, data)
@@ -221,7 +224,7 @@ class SqlRepo
       @person.variable_states[:addresses]
     end
 
-    [:email, :phone, :credit_card, :title].each do |state|
+    [:email, :phone, :credit_card, :title, :nickname].each do |state|
       define_method(state) { return @person.variable_states[state] }
     end
   end
