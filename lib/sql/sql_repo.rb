@@ -19,11 +19,7 @@ class SqlRepo
 
   def read first_name, last_name
     person_descriptor = retrieve_person(first_name, last_name)
-    person = to_person(person_descriptor)
-    person_id = extract_id(person_descriptor)
-    addresses = addresses_for(person_id)
-    add_addresses(person, addresses)
-    person
+    build_person(person_descriptor)
   end
 
   def update person
@@ -38,7 +34,35 @@ class SqlRepo
     delete_person(ripped_person)
   end
 
+  def find_by field_value
+    person_descriptors = find_people(field_value)
+    person_descriptors.map do |person_descriptor|
+      build_person(person_descriptor)
+    end
+  end
+
   private
+
+  def find_people field_value
+    field_name = field_value.keys[0]
+    value = field_value.values[0]
+
+    query = """
+      SELECT * FROM people WHERE #{field_name} = ?
+    """
+    data = [value]
+
+    @db.execute(query, data)
+  end
+
+  def build_person person_descriptor
+    person = to_person(person_descriptor)
+
+    person_id = extract_id(person_descriptor)
+    addresses = addresses_for(person_id)
+    add_addresses(person, addresses)
+    person
+  end
 
   def delete_person person
     id = retrieve_person_id(person)

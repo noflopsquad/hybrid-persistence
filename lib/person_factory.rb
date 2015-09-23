@@ -13,6 +13,7 @@ class PersonFactory
     person.phone = Faker::PhoneNumber.phone_number
     person.credit_card = Faker::Business.credit_card_number
     person.title = Faker::Name.title
+    person.nickname = Faker::Name.first_name
 
     1..5.times do
       person.add_address(fake_address())

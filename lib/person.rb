@@ -17,6 +17,8 @@ class Person
     same_first && same_last
   end
 
+  alias_method :==, :eql?
+
   def self.create_from_descriptor(descriptor)
     person = Person.new(descriptor["first_name"], descriptor["last_name"])
     person.send(:variable_states)[:title] = descriptor["title"]

@@ -137,6 +137,28 @@ shared_examples_for "a repo" do
       expect {repo.delete(person)}.to_not raise_error
     end
   end
+
+  describe "finds people by any field" do
+    it "finds several people by nickname" do
+      random_person = PersonFactory.fake_it()
+      random_person.nickname = "koko"
+      another_person = a_person.with_first_name("Federico").
+        with_last_name("Mota").with_email(email).
+        with_phone(phone).with_title(title).
+        with_credit_card(credit_card).
+        with_nickname(nickname).build()
+      repo.insert(another_person)
+      repo.insert(random_person)
+      repo.insert(person)
+
+      found = repo.find_by({:nickname => "pepito"})
+
+      testable_found_people = found.map {|person| make_testable(person)}
+      expect(found).not_to include(random_person)
+      expect(found).to include(another_person)
+      expect(found).to include(person)
+    end
+  end
 end
 
 describe MongoRepo do
