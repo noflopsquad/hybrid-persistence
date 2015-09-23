@@ -34,8 +34,8 @@ class SqlRepo
     delete_person(ripped_person)
   end
 
-  def find_by field_value
-    person_descriptors = find_people(field_value)
+  def find_by field_values
+    person_descriptors = find_people(field_values)
     person_descriptors.map do |person_descriptor|
       build_person(person_descriptor)
     end
@@ -43,16 +43,22 @@ class SqlRepo
 
   private
 
-  def find_people field_value
-    field_name = field_value.keys[0]
-    value = field_value.values[0]
-
-    query = """
-      SELECT * FROM people WHERE #{field_name} = ?
-    """
-    data = [value]
-
+  def find_people fields
+    query = create_find_by_query(fields)
+    data = fields.values
     @db.execute(query, data)
+  end
+
+  def create_find_by_query fields
+    "SELECT * FROM people " + create_where_clause(fields.keys)
+  end
+
+  def create_where_clause field_names
+    clause = "WHERE #{field_names.first} = ?"
+    field_names.drop(1).each do |field_name|
+      clause += " AND #{field_name} = ?"
+    end
+    clause
   end
 
   def build_person person_descriptor

@@ -138,8 +138,8 @@ shared_examples_for "a repo" do
     end
   end
 
-  describe "finds people by any field" do
-    it "finds several people by nickname" do
+  describe "finds several people by any fields" do
+    it "for instance by nickname" do
       random_person = PersonFactory.fake_it()
       random_person.nickname = "koko"
       another_person = a_person.with_first_name("Federico").
@@ -157,6 +157,33 @@ shared_examples_for "a repo" do
       expect(found).not_to include(random_person)
       expect(found).to include(another_person)
       expect(found).to include(person)
+    end
+
+    it "for instance by nickname and title" do
+      random_person = PersonFactory.fake_it()
+      random_person.nickname = "koko"
+      another_person = a_person.with_first_name("Federico").
+        with_last_name("Mota").with_email(email).
+        with_phone(phone).with_title("God").
+        with_credit_card(credit_card).
+        with_nickname(nickname).build()
+      another_person_more = a_person.with_first_name("Koko").
+        with_last_name("Loko").with_email(email).
+        with_phone(phone).with_title("God").
+        with_credit_card(credit_card).
+        with_nickname(nickname).build()
+      repo.insert(another_person)
+      repo.insert(random_person)
+      repo.insert(person)
+      repo.insert(another_person_more)
+
+      found = repo.find_by({:nickname => "pepito", :title => "God"})
+
+      testable_found_people = found.map {|person| make_testable(person)}
+      expect(testable_found_people).not_to include(random_person)
+      expect(testable_found_people).not_to include(person)
+      expect(testable_found_people).to include(another_person)
+      expect(testable_found_people).to include(another_person_more)
     end
   end
 end
