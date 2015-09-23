@@ -11,13 +11,11 @@ class Person
     @variable_states[:addresses] << address
   end
 
-  def eql? other
+  def == other
     same_first = first_name.eql?(other.first_name)
     same_last = last_name.eql?(other.last_name)
     same_first && same_last
   end
-
-  alias_method :==, :eql?
 
   def self.create_from_descriptor(descriptor)
     person = Person.new(descriptor["first_name"], descriptor["last_name"])

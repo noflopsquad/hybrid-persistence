@@ -35,7 +35,7 @@ shared_examples_for "a repo" do
     repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
-    expect(retrieved).to eql(person)
+    expect(retrieved).to eq(person)
   end
 
   it "persists people properly" do
