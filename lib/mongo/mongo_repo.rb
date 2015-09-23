@@ -15,10 +15,7 @@ class MongoRepo
 
   def read first_name, last_name
     person_descriptor = retrieve_person(first_name, last_name)
-    person = to_person(person_descriptor)
-    addresses = build_addresses(person_descriptor)
-    add_addresses(person, addresses)
-    person
+    build_person(person_descriptor)
   end
 
   def update person
@@ -41,7 +38,21 @@ class MongoRepo
     )
   end
 
+  def find_by fields
+    person_descriptors = @mongo[:people].find(fields)
+    person_descriptors.map do |person_descriptor|
+      build_person(person_descriptor)
+    end
+  end
+
   private
+
+  def build_person person_descriptor
+    person = to_person(person_descriptor)
+    addresses = build_addresses(person_descriptor)
+    add_addresses(person, addresses)
+    person
+  end
 
   def add_addresses person, addresses
     addresses.each do |address|
