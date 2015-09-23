@@ -50,15 +50,21 @@ class SqlRepo
   end
 
   def create_find_by_query fields
-    "SELECT * FROM people " + create_where_clause(fields.keys)
+    "SELECT * FROM people LEFT JOIN addresses ON people.id = addresses.person_id " +
+      create_where_clause(fields.keys)
   end
 
   def create_where_clause field_names
-    clause = "WHERE #{field_names.first} = ?"
+    clause = "WHERE " + compose_field_name(field_names.first) + " = ?"
     field_names.drop(1).each do |field_name|
       clause += " AND #{field_name} = ?"
     end
     clause
+  end
+
+  def compose_field_name field_name
+    return "people." + field_name.to_s if RippedPerson.has_field?(field_name)
+    return "addresses." + field_name.to_s if RippedAddress.has_field?(field_name)
   end
 
   def build_person person_descriptor
@@ -233,12 +239,18 @@ class SqlRepo
 
     def_delegators :@address, :street_name, :street_address
 
+    @@FIELDS = [:city, :country]
+
     def initialize(address)
       @address = address
     end
 
-    [:city, :country].each do |state|
+    @@FIELDS.each do |state|
       define_method(state) { return @address.variable_states[state] }
+    end
+
+    def self.has_field? field
+      @@FIELDS.include?(field)
     end
   end
 
@@ -246,6 +258,8 @@ class SqlRepo
     extend Forwardable
 
     def_delegators :@person, :first_name, :last_name
+
+    @@FIELDS = [:email, :phone, :credit_card, :title, :nickname]
 
     def initialize(person)
       @person = person
@@ -256,8 +270,12 @@ class SqlRepo
       @person.variable_states[:addresses]
     end
 
-    [:email, :phone, :credit_card, :title, :nickname].each do |state|
+    @@FIELDS.each do |state|
       define_method(state) { return @person.variable_states[state] }
+    end
+
+    def self.has_field? field
+      @@FIELDS.include?(field)
     end
   end
 end

@@ -138,7 +138,7 @@ shared_examples_for "a repo" do
     end
   end
 
-  describe "finding several people by any Person fields" do
+  describe "finding several people by any fields" do
     let(:random_person) { PersonFactory.fake_it() }
     let(:another_person) {
       a_person.with_first_name("Federico").
@@ -182,6 +182,24 @@ shared_examples_for "a repo" do
       expect(found).not_to include(random_person)
       expect(found).not_to include(person)
       expect(found).to include(another_person)
+      expect(found).to include(another_person_more)
+    end
+
+    it "for instance by city" do
+      a_random_address.city = "Honolulu"
+      another_person.add_address(a_random_address)
+      person.add_address(address)
+      another_adress_more = PersonFactory.fake_address()
+      another_adress_more.city = city
+      another_person_more.add_address(another_adress_more)
+      repo.insert(person)
+      repo.insert(another_person)
+      repo.insert(another_person_more)
+
+      found = repo.find_by({:city => city})
+
+      expect(found).to include(person)
+      expect(found).not_to include(another_person)
       expect(found).to include(another_person_more)
     end
   end
