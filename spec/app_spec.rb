@@ -65,7 +65,7 @@ shared_examples_for "a repo" do
     expect(testable_address.country).to eq(country)
   end
 
-  describe "when update" do
+  describe "updating" do
     it "updates people" do
       repo.insert(person)
       updated_card = "50252067239763"
@@ -120,7 +120,7 @@ shared_examples_for "a repo" do
     end
   end
 
-  describe "deletes people" do
+  describe "deleting people" do
     it "when it already exists, it's deleted" do
       repo.insert(person)
 
@@ -138,40 +138,40 @@ shared_examples_for "a repo" do
     end
   end
 
-  describe "finds several people by any fields" do
+  describe "finding several people by any Person fields" do
+    let(:random_person) { PersonFactory.fake_it() }
+    let(:another_person) {
+      a_person.with_first_name("Federico").
+      with_last_name("Mota").with_email(email).
+      with_phone(phone).with_title(title).
+      with_credit_card(credit_card).
+      with_nickname(nickname).build()
+    }
+    let(:another_person_more) {
+      a_person.with_first_name("Koko").
+      with_last_name("Loko").with_email(email).
+      with_phone(phone).with_title(title).
+      with_credit_card(credit_card).
+      with_nickname(nickname).build()
+    }
+
     it "for instance by nickname" do
-      random_person = PersonFactory.fake_it()
       random_person.nickname = "koko"
-      another_person = a_person.with_first_name("Federico").
-        with_last_name("Mota").with_email(email).
-        with_phone(phone).with_title(title).
-        with_credit_card(credit_card).
-        with_nickname(nickname).build()
       repo.insert(another_person)
       repo.insert(random_person)
       repo.insert(person)
 
       found = repo.find_by({:nickname => "pepito"})
 
-      testable_found_people = found.map {|person| make_testable(person)}
       expect(found).not_to include(random_person)
       expect(found).to include(another_person)
       expect(found).to include(person)
     end
 
     it "for instance by nickname and title" do
-      random_person = PersonFactory.fake_it()
       random_person.nickname = "koko"
-      another_person = a_person.with_first_name("Federico").
-        with_last_name("Mota").with_email(email).
-        with_phone(phone).with_title("God").
-        with_credit_card(credit_card).
-        with_nickname(nickname).build()
-      another_person_more = a_person.with_first_name("Koko").
-        with_last_name("Loko").with_email(email).
-        with_phone(phone).with_title("God").
-        with_credit_card(credit_card).
-        with_nickname(nickname).build()
+      another_person.title = "God"
+      another_person_more.title = "God"
       repo.insert(another_person)
       repo.insert(random_person)
       repo.insert(person)
@@ -179,11 +179,10 @@ shared_examples_for "a repo" do
 
       found = repo.find_by({:nickname => "pepito", :title => "God"})
 
-      testable_found_people = found.map {|person| make_testable(person)}
-      expect(testable_found_people).not_to include(random_person)
-      expect(testable_found_people).not_to include(person)
-      expect(testable_found_people).to include(another_person)
-      expect(testable_found_people).to include(another_person_more)
+      expect(found).not_to include(random_person)
+      expect(found).not_to include(person)
+      expect(found).to include(another_person)
+      expect(found).to include(another_person_more)
     end
   end
 end
