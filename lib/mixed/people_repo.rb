@@ -26,6 +26,13 @@ class PeopleRepo
     remove_identity(person)
   end
 
+  def find_by fields
+    descriptors = collection.find(fields)
+    descriptors.map do |descriptor|
+      Person.create_from_descriptor(descriptor)
+    end
+  end
+
   private
 
   def collection
@@ -35,7 +42,8 @@ class PeopleRepo
   def update_state person
     state = extract_person_state(person)
     collection.find_one_and_update(
-      {from: person.identity},
+      {first_name: person.first_name,
+       last_name: person.last_name},
       state
     )
   end
@@ -49,15 +57,18 @@ class PeopleRepo
   end
 
   def remove_state person
-    collection.find_one_and_delete({from: person.identity})
+    collection.find_one_and_delete(
+      {first_name: person.first_name,
+       last_name: person.last_name}
+    )
   end
 
   def retrieve_person first_name, last_name
-    person_identity = PersonIdentity.new(first_name, last_name).hash
-    state = collection.find(from: person_identity).first
-    Person.create_from_descriptor(
-      state.merge({"first_name" => first_name, "last_name" => last_name})
-    )
+    state = collection.find(
+      first_name: first_name,
+      last_name: last_name
+    ).first
+    Person.create_from_descriptor(state)
   end
 
   def check_existence! first_name, last_name
@@ -82,7 +93,10 @@ class PeopleRepo
   end
 
   def extract_person_state person
-    state = person.variable_states.merge(from: person.identity)
+    state = person.variable_states.merge(
+      first_name: person.first_name,
+      last_name: person.last_name
+    )
     state.delete(:addresses)
     state
   end

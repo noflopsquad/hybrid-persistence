@@ -17,10 +17,8 @@ class MixedRepo
   end
 
   def read first_name, last_name
-    person_identity = PersonIdentity.new(first_name, last_name).hash
     person = @people.read(first_name, last_name)
-    addresses = @addresses.read(person_identity)
-    add_addresses(person, addresses)
+    add_addresses_to_people([person])
     person
   end
 
@@ -36,12 +34,26 @@ class MixedRepo
     delete_addresses(accessible)
   end
 
+  def find_by fields
+    found_people = @people.find_by(fields)
+    add_addresses_to_people(found_people)
+    found_people
+  end
+
   private
 
   def delete_addresses person
     person.addresses.each do |address|
       accessible = AccessibleAddress.new(address)
       @addresses.delete(address)
+    end
+  end
+
+  def add_addresses_to_people people
+    people.each do |person|
+      accessible = AccessiblePerson.new(person)
+      addresses = @addresses.read(accessible.identity)
+      add_addresses(accessible, addresses)
     end
   end
 
@@ -68,7 +80,7 @@ class MixedRepo
   class AccessiblePerson < Person
     extend Forwardable
 
-    def_delegators :@person, :first_name, :last_name, :variable_states
+    def_delegators :@person, :first_name, :last_name, :variable_states, :add_address
 
     def initialize(person)
       @person = person
