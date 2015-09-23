@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS "addresses" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "city" TEXT,
+    "country" TEXT,
     "street_name" TEXT,
     "street_address" TEXT,
     "person_id" INTEGER

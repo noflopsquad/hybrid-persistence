@@ -14,6 +14,7 @@ class Address
   def self.create_from_descriptor(descriptor)
     address = Address.new(descriptor["street_name"], descriptor["street_address"])
     address.send(:variable_states)[:city] = descriptor["city"]
+    address.send(:variable_states)[:country] = descriptor["country"]
     address
   end
 

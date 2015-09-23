@@ -22,9 +22,11 @@ shared_examples_for "a repo" do
   let (:street_name) {"Calle"}
   let (:street_address) {"Diagonal"}
   let (:city) {"Barcelona"}
+  let (:country) {"Spain"}
   let (:address) {
     an_address.with_street_name(street_name).
-    with_street_address(street_address).in(city).build()
+    with_street_address(street_address).in(city).
+    with_country(country).build()
   }
 
   it "holds people sent" do
@@ -58,7 +60,9 @@ shared_examples_for "a repo" do
     testable_person = make_testable(retrieved)
     expect(testable_person.has_address?(street_name, street_address)).to be_truthy
     expect(testable_person.has_address?("Avenida", "Valencia")).to be_falsy
-    expect(testable_person.retrieve_address(street_name, street_address).city).to eq(city)
+    testable_address = testable_person.retrieve_address(street_name, street_address)
+    expect(testable_address.city).to eq(city)
+    expect(testable_address.country).to eq(country)
   end
 
   describe "when update" do
@@ -91,13 +95,17 @@ shared_examples_for "a repo" do
       person.add_address(address)
       repo.insert(person)
       updated_city = "Valencia"
+      updated_country = "Catalonia"
 
       address.city = updated_city
+      address.country = updated_country
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
       testable_person = make_testable(retrieved)
-      expect(testable_person.retrieve_address(street_name, street_address).city).to eq(updated_city)
+      testable_address = testable_person.retrieve_address(street_name, street_address)
+      expect(testable_address.city).to eq(updated_city)
+      expect(testable_address.country).to eq(updated_country)
     end
 
     it "inserts non existing address" do

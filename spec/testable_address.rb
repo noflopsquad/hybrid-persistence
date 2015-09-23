@@ -7,7 +7,7 @@ class TestableAddress < Address
     @address = address
   end
 
-  [:city].each do |state|
+  [:city, :country].each do |state|
     define_method(state) { return @address.variable_states[state] }
     writer = state.to_s + "="
     define_method(writer) do |value|

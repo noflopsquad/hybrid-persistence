@@ -78,6 +78,11 @@ class AddressBuilder
     self
   end
 
+  def with_country country
+    @country = country
+    self
+  end
+
   def build
     raise ArgumentError.new("Missing Address invariants") if missing_invariant?
 
@@ -85,6 +90,7 @@ class AddressBuilder
       Address.new(@street_name, @street_address)
     )
     address.city = @city unless @city.nil?
+    address.country = @country unless @country.nil?
     address
   end
 

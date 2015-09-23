@@ -63,13 +63,13 @@ class SqlRepo
       UPDATE people SET phone=?, title=?, credit_card=?, email=?, nickname=?
       WHERE first_name=? AND last_name=?
       """
-    updated_data = [
+    data = [
       person.phone, person.title, person.credit_card,
       person.email, person.nickname
     ]
     where = [ person.first_name, person.last_name ]
 
-    @db.execute(command, updated_data + where)
+    @db.execute(command, data + where)
   end
 
   def update_addresses person
@@ -91,22 +91,24 @@ class SqlRepo
 
   def update_address address, id
     command = """
-        UPDATE addresses SET city=? WHERE person_id=?
+        UPDATE addresses SET city=?, country=? WHERE person_id=?
         """
-    data = [address.city, id]
-    @db.execute(command, data)
+    data = [address.city, address.country]
+    where = [id]
+    @db.execute(command, data + where)
   end
 
   def persist_address address, id
     command = """
-      INSERT INTO addresses(street_name, street_address, city, person_id)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO addresses(street_name, street_address, city, person_id, country)
+      VALUES (?, ?, ?, ?, ?)
       """
     data = [
       address.street_name,
       address.street_address,
       address.city,
-      id
+      id,
+      address.country
     ]
     @db.execute(command, data)
   end
@@ -205,7 +207,7 @@ class SqlRepo
       @address = address
     end
 
-    [:city].each do |state|
+    [:city, :country].each do |state|
       define_method(state) { return @address.variable_states[state] }
     end
   end
