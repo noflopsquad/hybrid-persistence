@@ -54,8 +54,8 @@ class SqlRepo
     command = """
       DELETE FROM addresses WHERE person_id=?
       """
-    data = [id]
-    @db.execute(command, data)
+    where = [id]
+    @db.execute(command, where)
   end
 
   def update_person person
@@ -63,13 +63,13 @@ class SqlRepo
       UPDATE people SET phone=?, title=?, credit_card=?, email=?, nickname=?
       WHERE first_name=? AND last_name=?
       """
-    data = [
+    updated_data = [
       person.phone, person.title, person.credit_card,
       person.email, person.nickname
     ]
     where = [ person.first_name, person.last_name ]
 
-    @db.execute(command, data + where)
+    @db.execute(command, updated_data + where)
   end
 
   def update_addresses person
