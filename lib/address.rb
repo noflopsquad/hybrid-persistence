@@ -5,7 +5,7 @@ class Address
     @variable_states = {}
   end
 
-  def eql? other
+  def == other
     same_street_name = street_name == other.street_name
     same_street_address = street_address == other.street_address
     same_street_name && same_street_address
@@ -18,8 +18,8 @@ class Address
     address
   end
 
-  alias_method :==, :eql?
+  alias_method :eql?, :==
 
-  protected
+    protected
   attr_reader :street_name, :street_address, :variable_states
 end
