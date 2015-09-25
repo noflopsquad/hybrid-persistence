@@ -239,18 +239,18 @@ class SqlRepo
 
     def_delegators :@address, :street_name, :street_address
 
-    @@FIELDS = [:city, :country]
+    FIELDS = [:city, :country]
 
     def initialize(address)
       @address = address
     end
 
-    @@FIELDS.each do |state|
+    FIELDS.each do |state|
       define_method(state) { return @address.variable_states[state] }
     end
 
     def self.has_field? field
-      @@FIELDS.include?(field)
+      FIELDS.include?(field)
     end
   end
 
