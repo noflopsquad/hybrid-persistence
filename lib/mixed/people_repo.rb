@@ -2,9 +2,9 @@ require './lib/connections'
 require './lib/mixed/person_identity'
 
 class PeopleRepo
-  def initialize
-    @sql = Connections.sql
-    @mongo = Connections.mongo
+  def initialize(sql, mongo)
+    @sql = sql
+    @mongo = mongo
   end
 
   def insert person
@@ -27,16 +27,23 @@ class PeopleRepo
   end
 
   def find_by fields
-    descriptors = collection.find(fields)
+    person_fields = fields.select {|field| person_field?(field)}
+    return [] if person_fields.empty?
+    descriptors = collection.find(person_fields)
     descriptors.map do |descriptor|
       Person.create_from_descriptor(descriptor)
     end
   end
 
   private
+  FIELDS = [:first_name, :last_name, :email, :phone, :credit_card, :title, :nickname]
 
   def collection
     @mongo[:person_states]
+  end
+
+  def person_field? field
+    FIELDS.include?(field)
   end
 
   def update_state person
@@ -80,10 +87,10 @@ class PeopleRepo
   end
 
   def persist_identity person
-    data = [person.first_name, person.last_name]
     command = """
-      INSERT INTO mixed_people (first_name, last_name) VALUES (?, ?)
+      INSERT INTO mixed_people (id, first_name, last_name) VALUES (?, ?, ?)
       """
+    data = [person.identity, person.first_name, person.last_name]
     @sql.execute(command, data)
   end
 

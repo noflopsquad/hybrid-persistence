@@ -2,9 +2,9 @@ require './lib/connections'
 require './lib/mixed/address_identity'
 
 class AddressesRepo
-  def initialize
-    @sql = Connections.sql
-    @mongo = Connections.mongo
+  def initialize(sql, mongo)
+    @sql = sql
+    @mongo = mongo
   end
 
   def insert address, person_identity
@@ -30,7 +30,21 @@ class AddressesRepo
     remove_identity(address)
   end
 
+  def find_by fields
+    address_fields = fields.select {|field| address_field?(field)}
+    return [] if address_fields.empty?
+    descriptors = collection.find(address_fields)
+    descriptors.map do |descriptor|
+      Address.create_from_descriptor(descriptor)
+    end
+  end
+
   private
+  FIELDS = [:street_name, :street_address, :city, :country]
+
+  def address_field? field
+    FIELDS.include?(field)
+  end
 
   def collection
     @mongo[:address_states]

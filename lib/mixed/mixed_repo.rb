@@ -3,11 +3,14 @@ require './lib/mixed/people_repo'
 require './lib/mixed/addresses_repo'
 require './lib/mixed/person_identity'
 require './lib/mixed/address_identity'
+require 'set'
 
 class MixedRepo
   def initialize
-    @people = PeopleRepo.new
-    @addresses = AddressesRepo.new
+    @sql = Connections.sql
+    @mongo = Connections.mongo
+    @people = PeopleRepo.new(@sql, @mongo)
+    @addresses = AddressesRepo.new(@sql, @mongo)
   end
 
   def insert person
@@ -35,12 +38,41 @@ class MixedRepo
   end
 
   def find_by fields
+    found_people = Set.new
+    found_people.merge(find_by_people(fields))
+    found_people.merge(find_by_addresses(fields))
+    found_people.to_a
+  end
+
+  private
+
+  def find_by_people fields
     found_people = @people.find_by(fields)
     add_addresses_to_people(found_people)
     found_people
   end
 
-  private
+  def find_by_addresses fields
+    found_addresses = @addresses.find_by(fields)
+    find_people_associated_to(found_addresses)
+  end
+
+  def find_people_associated_to addresses
+    addresses.map do |address|
+      find_person_associated_to(AccessibleAddress.new(address))
+    end
+  end
+
+  def find_person_associated_to address
+    query = """
+      SELECT p.first_name, p.last_name FROM mixed_people AS p INNER JOIN mixed_addresses AS a
+      ON p.id = a.person_id
+      where a.street_name = ? AND a.street_address = ?
+      """
+    where = [address.street_name, address.street_address]
+    person_identity = @sql.execute(query, where).first
+    @people.read(person_identity["first_name"], person_identity["last_name"])
+  end
 
   def delete_addresses person
     person.addresses.each do |address|
