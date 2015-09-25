@@ -259,7 +259,7 @@ class SqlRepo
 
     def_delegators :@person, :first_name, :last_name
 
-    @@FIELDS = [:email, :phone, :credit_card, :title, :nickname]
+    FIELDS = [:email, :phone, :credit_card, :title, :nickname]
 
     def initialize(person)
       @person = person
@@ -270,12 +270,12 @@ class SqlRepo
       @person.variable_states[:addresses]
     end
 
-    @@FIELDS.each do |state|
+    FIELDS.each do |state|
       define_method(state) { return @person.variable_states[state] }
     end
 
     def self.has_field? field
-      @@FIELDS.include?(field)
+      FIELDS.include?(field)
     end
   end
 end
