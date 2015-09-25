@@ -39,13 +39,35 @@ class MongoRepo
   end
 
   def find_by fields
-    person_descriptors = @mongo[:people].find(fields)
+    person_descriptors = @mongo[:people].find(compose_query_hash(fields))
     person_descriptors.map do |person_descriptor|
       build_person(person_descriptor)
     end
   end
 
   private
+
+  def compose_query_hash fields
+    fields.inject({}) do |query_hash_so_far, field|
+      key = field[0]
+      value = field[1]
+      if person_field?(key)
+        query_hash_so_far[key] = value
+      elsif addresses_field?(key)
+        query_hash_so_far["addresses." + key.to_s] = value
+      end
+      query_hash_so_far
+    end
+  end
+
+  def person_field? field
+    [:first_name, :last_name, :email, :title,
+     :nickname, :phone, :credit_card].include?(field)
+  end
+
+  def addresses_field? field
+    [:street_name, :street_address, :city, :country].include?(field)
+  end
 
   def build_person person_descriptor
     person = to_person(person_descriptor)
