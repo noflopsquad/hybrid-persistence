@@ -27,6 +27,7 @@ class PersonFactory
       Address.new Faker::Address.street_name, Faker::Address.street_address
     )
     address.city = Faker::Address.city
+    address.country = Faker::Address.country
     address
   end
 end

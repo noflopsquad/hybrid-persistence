@@ -1,5 +1,4 @@
 require './lib/connections'
-require './lib/mixed/person_identity'
 
 class PeopleRepo
   def initialize(sql, mongo)
@@ -27,7 +26,7 @@ class PeopleRepo
   end
 
   def find_by fields
-    person_fields = fields.select {|field| person_field?(field)}
+    person_fields = fields.select {|field| includes_field?(field)}
     return [] if person_fields.empty?
     descriptors = collection.find(person_fields)
     descriptors.map do |descriptor|
@@ -35,15 +34,15 @@ class PeopleRepo
     end
   end
 
-  private
   FIELDS = [:first_name, :last_name, :email, :phone, :credit_card, :title, :nickname]
 
-  def collection
-    @mongo[:person_states]
+  def includes_field? field
+    FIELDS.include?(field)
   end
 
-  def person_field? field
-    FIELDS.include?(field)
+  private
+  def collection
+    @mongo[:person_states]
   end
 
   def update_state person

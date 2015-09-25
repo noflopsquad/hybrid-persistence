@@ -31,7 +31,7 @@ class AddressesRepo
   end
 
   def find_by fields
-    address_fields = fields.select {|field| address_field?(field)}
+    address_fields = fields.select {|field| includes_field?(field)}
     return [] if address_fields.empty?
     descriptors = collection.find(address_fields)
     descriptors.map do |descriptor|
@@ -39,13 +39,14 @@ class AddressesRepo
     end
   end
 
-  private
+
   FIELDS = [:street_name, :street_address, :city, :country]
 
-  def address_field? field
+  def includes_field? field
     FIELDS.include?(field)
   end
 
+  private
   def collection
     @mongo[:address_states]
   end

@@ -1,7 +1,6 @@
 require 'forwardable'
 require './lib/mixed/people_repo'
 require './lib/mixed/addresses_repo'
-require './lib/mixed/person_identity'
 require './lib/mixed/address_identity'
 require 'set'
 
@@ -38,23 +37,50 @@ class MixedRepo
   end
 
   def find_by fields
-    found_people = Set.new
-    found_people.merge(find_by_people(fields))
-    found_people.merge(find_by_addresses(fields))
-    found_people.to_a
-  end
-
-  private
-
-  def find_by_people fields
-    found_people = @people.find_by(fields)
+    found_people = find_people_by(fields)
     add_addresses_to_people(found_people)
     found_people
   end
 
+  private
+
+  def find_people_by fields
+    return find_only_by_people(fields) if only_people?(fields)
+    return find_only_by_addresses(fields) if only_addresses?(fields)
+    return find_by_all(fields)
+  end
+
+  def only_people? fields
+    fields.all? { |field| @people.includes_field?(field.first) }
+  end
+
+  def only_addresses? fields
+    fields.all? { |field| @addresses.includes_field?(field.first) }
+  end
+
+  def find_by_all fields
+    found_in_people = find_by_people(fields)
+    found_in_addresses = find_by_addresses(fields)
+    found_in_people.intersection(found_in_addresses).to_a
+  end
+
+  def find_only_by_people fields
+    find_by_people(fields).to_a
+  end
+
+  def find_only_by_addresses fields
+    find_by_addresses(fields).to_a
+  end
+
+  def find_by_people fields
+    found_people = @people.find_by(fields)
+    Set.new(found_people)
+  end
+
   def find_by_addresses fields
     found_addresses = @addresses.find_by(fields)
-    find_people_associated_to(found_addresses)
+    found_people = find_people_associated_to(found_addresses)
+    Set.new(found_people)
   end
 
   def find_people_associated_to addresses
@@ -116,10 +142,6 @@ class MixedRepo
 
     def initialize(person)
       @person = person
-    end
-
-    def identity
-      PersonIdentity.new(first_name, last_name).hash
     end
 
     def addresses

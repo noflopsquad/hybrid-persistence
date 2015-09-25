@@ -202,6 +202,25 @@ shared_examples_for "a repo" do
       expect(found).not_to include(another_person)
       expect(found).to include(another_person_more)
     end
+
+    it "finds by city and nickname" do
+      a_random_address.city = "Honolulu"
+      another_person.add_address(a_random_address)
+      person.add_address(address)
+      another_adress_more = PersonFactory.fake_address()
+      another_adress_more.city = city
+      another_person_more.add_address(another_adress_more)
+      another_person_more.nickname = "yoquese"
+      repo.insert(person)
+      repo.insert(another_person)
+      repo.insert(another_person_more)
+
+      found = repo.find_by({:city => city, :nickname => "yoquese"})
+
+      expect(found).not_to include(person)
+      expect(found).not_to include(another_person)
+      expect(found).to include(another_person_more)
+    end
   end
 end
 
