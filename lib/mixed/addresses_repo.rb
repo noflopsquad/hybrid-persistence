@@ -37,9 +37,13 @@ class AddressesRepo
   end
 
   def update_state address
-    state = address.variable_states.merge(from: address.identity)
+    state = address.variable_states.merge(
+      street_name: address.street_name,
+      street_address: address.street_address
+    )
     collection.find_one_and_update(
-      {from: address.identity},
+      {street_name: address.street_name,
+       street_address: address.street_address},
       state
     )
   end
@@ -59,7 +63,8 @@ class AddressesRepo
 
   def remove_state address
     address_identity = AddressIdentity.new(address.street_name, address.street_address).hash
-    collection.find_one_and_delete({from: address_identity})
+    collection.find_one_and_delete({street_name: address.street_name,
+                                    street_address: address.street_address})
   end
 
   def build_addresses descriptors
@@ -69,13 +74,10 @@ class AddressesRepo
   end
 
   def build_address descriptor
-    address_identity = AddressIdentity.new(descriptor["street_name"], descriptor["street_address"])
-    state = collection.find(from: address_identity.hash).first
+    state = collection.find(street_name: descriptor["street_name"],
+                            street_address: descriptor["street_address"]).first
 
-    Address.create_from_descriptor(
-      state.merge(
-        {"street_name" => descriptor["street_name"],
-         "street_address" => descriptor["street_address"]}))
+    Address.create_from_descriptor(state)
   end
 
   def retrieve_descriptors person_identity
@@ -99,7 +101,8 @@ class AddressesRepo
   end
 
   def persist_state address
-    state = address.variable_states.merge(from: address.identity)
+    state = address.variable_states.merge(street_name: address.street_name,
+                                          street_address: address.street_address)
     collection.insert_one(state)
   end
 end
