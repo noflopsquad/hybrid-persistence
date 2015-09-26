@@ -71,11 +71,9 @@ shared_examples_for "a repo" do
       updated_email = "adios@hola.com"
       updated_nickname = "trikitrok"
 
-      person.changing(
-        {phone: updated_phone, title: updated_title,
-         credit_card: updated_card,
-         email: updated_email,
-         nickname: updated_nickname})
+      person.changing(phone: updated_phone, title: updated_title,
+                      credit_card: updated_card, email: updated_email,
+                      nickname: updated_nickname)
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
@@ -92,7 +90,7 @@ shared_examples_for "a repo" do
       updated_city = "Valencia"
       updated_country = "Catalonia"
 
-      address.changing({city: updated_city, country: updated_country})
+      address.changing(city: updated_city, country: updated_country)
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
@@ -150,48 +148,48 @@ shared_examples_for "a repo" do
 
     it "finds by nickname" do
       repo.insert(another_person)
-      repo.insert(random_person.changing({nickname: "koko"}))
+      repo.insert(random_person.changing(nickname: "koko"))
       repo.insert(person)
 
-      found = repo.find_by({:nickname => "pepito"})
+      found = repo.find_by(nickname: "pepito")
 
       expect(found).to contain_exactly(another_person, person)
     end
 
     it "finds by nickname and title" do
-      repo.insert(another_person.changing({title: "God"}))
-      repo.insert(random_person.changing({nickname: "koko"}))
+      repo.insert(another_person.changing(title: "God"))
+      repo.insert(random_person.changing(nickname: "koko"))
       repo.insert(person)
-      repo.insert(another_person_more.changing({title: "God"}))
+      repo.insert(another_person_more.changing(title: "God"))
 
-      found = repo.find_by({:nickname => "pepito", :title => "God"})
+      found = repo.find_by(nickname: "pepito", title: "God")
 
       expect(found).to contain_exactly(another_person, another_person_more)
     end
 
     it "finds by city" do
-      another_person.add_address(a_random_address.changing({city: "Honolulu"}))
+      another_person.add_address(a_random_address.changing(city: "Honolulu"))
       person.add_address(address)
-      another_person_more.add_address(new_fake_address.changing({city: city}))
+      another_person_more.add_address(new_fake_address.changing(city: city))
       repo.insert(person)
       repo.insert(another_person)
       repo.insert(another_person_more)
 
-      found = repo.find_by({:city => city})
+      found = repo.find_by(city: city)
 
       expect(found).to contain_exactly(person, another_person_more)
     end
 
     it "finds by city and nickname" do
-      another_person.add_address(a_random_address.changing({city: "Honolulu"}))
+      another_person.add_address(a_random_address.changing(city: "Honolulu"))
       person.add_address(address)
-      another_person_more.add_address(new_fake_address.changing({city: city}))
-      another_person_more.changing({nickname: "yoquese"})
+      another_person_more.add_address(new_fake_address.changing(city: city))
+      another_person_more.changing(nickname: "yoquese")
       repo.insert(person)
       repo.insert(another_person)
       repo.insert(another_person_more)
 
-      found = repo.find_by({:city => city, :nickname => "yoquese"})
+      found = repo.find_by(city: city, nickname: "yoquese")
 
       expect(found).to contain_exactly(another_person_more)
     end
