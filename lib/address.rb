@@ -11,15 +11,20 @@ class Address
     same_street_name && same_street_address
   end
 
+  alias_method :eql?, :==
+
   def self.create_from_descriptor(descriptor)
     address = Address.new(descriptor["street_name"], descriptor["street_address"])
-    address.send(:variable_states)[:city] = descriptor["city"]
-    address.send(:variable_states)[:country] = descriptor["country"]
+    variable_state_fields.each do |field|
+      address.send(:variable_states)[field] = descriptor[field.to_s]
+    end
     address
   end
 
-  alias_method :eql?, :==
-
-    protected
+  protected
   attr_reader :street_name, :street_address, :variable_states
+
+  def self.variable_state_fields
+    [:city, :country]
+  end
 end

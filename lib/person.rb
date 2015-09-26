@@ -31,14 +31,16 @@ class Person
 
   def self.create_from_descriptor(descriptor)
     person = Person.new(descriptor["first_name"], descriptor["last_name"])
-    person.send(:variable_states)[:title] = descriptor["title"]
-    person.send(:variable_states)[:credit_card] = descriptor["credit_card"]
-    person.send(:variable_states)[:phone] = descriptor["phone"]
-    person.send(:variable_states)[:email] = descriptor["email"]
-    person.send(:variable_states)[:nickname] = descriptor["nickname"]
+    variable_state_fields.each do |field|
+      person.send(:variable_states)[field] = descriptor[field.to_s]
+    end
     person
   end
 
   protected
   attr_reader :first_name, :last_name, :variable_states
+
+  def self.variable_state_fields
+    [:email, :phone, :credit_card, :title, :nickname]
+  end
 end

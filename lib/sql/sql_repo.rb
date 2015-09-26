@@ -239,18 +239,16 @@ class SqlRepo
 
     def_delegators :@address, :street_name, :street_address
 
-    FIELDS = [:city, :country]
-
     def initialize(address)
       @address = address
     end
 
-    FIELDS.each do |state|
+    variable_state_fields.each do |state|
       define_method(state) { return @address.variable_states[state] }
     end
 
     def self.has_field? field
-      FIELDS.include?(field)
+      variable_state_fields.include?(field)
     end
   end
 
@@ -258,8 +256,6 @@ class SqlRepo
     extend Forwardable
 
     def_delegators :@person, :first_name, :last_name
-
-    FIELDS = [:email, :phone, :credit_card, :title, :nickname]
 
     def initialize(person)
       @person = person
@@ -270,12 +266,12 @@ class SqlRepo
       @person.variable_states[:addresses]
     end
 
-    FIELDS.each do |state|
+    variable_state_fields.each do |state|
       define_method(state) { return @person.variable_states[state] }
     end
 
     def self.has_field? field
-      FIELDS.include?(field)
+      variable_state_fields.include?(field)
     end
   end
 end
