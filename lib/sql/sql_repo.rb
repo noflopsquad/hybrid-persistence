@@ -57,7 +57,7 @@ class SqlRepo
   def create_where_clause field_names
     clause = "WHERE " + compose_field_name(field_names.first) + " = ?"
     field_names.drop(1).each do |field_name|
-      clause += " AND #{field_name} = ?"
+      clause += " AND " + compose_field_name(field_name) +" = ?"
     end
     clause
   end
