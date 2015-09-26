@@ -220,20 +220,6 @@ def testable_person(person)
   TestablePerson.new(person)
 end
 
-def testable_address(address)
-  TestableAddress.new(address)
-end
-
 def new_fake_address
   PersonFactory.fake_address()
-end
-
-def expect_person_having retrieved, fields
-  testable_person = testable_person(retrieved)
-
-  fields.each do |field|
-    field_reader = field[0].to_sym
-    expected_value = field[1]
-    expect(testable_person.send(field_reader)).to eql (expected_value)
-  end
 end
