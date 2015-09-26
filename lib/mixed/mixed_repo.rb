@@ -37,17 +37,17 @@ class MixedRepo
   end
 
   def find_by fields
-    found_people = find_people_by(fields)
+    found_people = retrieve_people_by(fields)
     add_addresses_to_people(found_people)
     found_people
   end
 
   private
 
-  def find_people_by fields
-    return find_only_by_people(fields) if only_people?(fields)
-    return find_only_by_addresses(fields) if only_addresses?(fields)
-    return find_by_all(fields)
+  def retrieve_people_by fields
+    return retrieve_only_by_people(fields) if only_people?(fields)
+    return retrieve_only_by_addresses(fields) if only_addresses?(fields)
+    return retrieve_by_all(fields)
   end
 
   def only_people? fields
@@ -58,38 +58,38 @@ class MixedRepo
     fields.all? { |field| @addresses.includes_field?(field.first) }
   end
 
-  def find_by_all fields
-    found_in_people = find_by_people(fields)
-    found_in_addresses = find_by_addresses(fields)
+  def retrieve_by_all fields
+    found_in_people = retrieve_by_people(fields)
+    found_in_addresses = retrieve_by_addresses(fields)
     found_in_people.intersection(found_in_addresses).to_a
   end
 
-  def find_only_by_people fields
-    find_by_people(fields).to_a
+  def retrieve_only_by_people fields
+    retrieve_by_people(fields).to_a
   end
 
-  def find_only_by_addresses fields
-    find_by_addresses(fields).to_a
+  def retrieve_only_by_addresses fields
+    retrieve_by_addresses(fields).to_a
   end
 
-  def find_by_people fields
+  def retrieve_by_people fields
     found_people = @people.find_by(fields)
     Set.new(found_people)
   end
 
-  def find_by_addresses fields
+  def retrieve_by_addresses fields
     found_addresses = @addresses.find_by(fields)
-    found_people = find_people_associated_to(found_addresses)
+    found_people = retrieve_people_associated_to(found_addresses)
     Set.new(found_people)
   end
 
-  def find_people_associated_to addresses
+  def retrieve_people_associated_to addresses
     addresses.map do |address|
-      find_person_associated_to(AccessibleAddress.new(address))
+      retrieve_person_associated_to(AccessibleAddress.new(address))
     end
   end
 
-  def find_person_associated_to address
+  def retrieve_person_associated_to address
     query = """
       SELECT p.first_name, p.last_name FROM mixed_people AS p INNER JOIN mixed_addresses AS a
       ON p.id = a.person_id
