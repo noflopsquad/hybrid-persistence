@@ -243,13 +243,17 @@ class SqlRepo
       @address = address
     end
 
-    variable_state_fields.each do |state|
-      define_method(state) { return @address.variable_states[state] }
-    end
-
     def self.has_field? field
       variable_state_fields.include?(field)
     end
+
+    private
+    def self.define_readers
+      variable_state_fields.each do |state|
+        define_method(state) { return @address.variable_states[state] }
+      end
+    end
+    define_readers()
   end
 
   class RippedPerson < Person
@@ -266,12 +270,16 @@ class SqlRepo
       @person.variable_states[:addresses]
     end
 
-    variable_state_fields.each do |state|
-      define_method(state) { return @person.variable_states[state] }
-    end
-
     def self.has_field? field
       variable_state_fields.include?(field)
     end
+
+    private
+    def self.define_readers
+      variable_state_fields.each do |state|
+        define_method(state) { return @person.variable_states[state] }
+      end
+    end
+    define_readers()
   end
 end

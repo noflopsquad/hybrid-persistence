@@ -156,9 +156,8 @@ shared_examples_for "a repo" do
     }
 
     it "finds by nickname" do
-      random_person.nickname = "koko"
       repo.insert(another_person)
-      repo.insert(random_person)
+      repo.insert(random_person.changing({nickname: "koko"}))
       repo.insert(person)
 
       found = repo.find_by({:nickname => "pepito"})
@@ -169,13 +168,10 @@ shared_examples_for "a repo" do
     end
 
     it "finds by nickname and title" do
-      random_person.nickname = "koko"
-      another_person.title = "God"
-      another_person_more.title = "God"
-      repo.insert(another_person)
-      repo.insert(random_person)
+      repo.insert(another_person.changing({title: "God"}))
+      repo.insert(random_person.changing({nickname: "koko"}))
       repo.insert(person)
-      repo.insert(another_person_more)
+      repo.insert(another_person_more.changing({title: "God"}))
 
       found = repo.find_by({:nickname => "pepito", :title => "God"})
 
@@ -186,12 +182,9 @@ shared_examples_for "a repo" do
     end
 
     it "finds by city" do
-      a_random_address.city = "Honolulu"
-      another_person.add_address(a_random_address)
-      person.add_address(address)
-      another_adress_more = PersonFactory.fake_address()
-      another_adress_more.city = city
-      another_person_more.add_address(another_adress_more)
+      another_person.changing({adding_address: a_random_address.changing({city: "Honolulu"})})
+      person.changing({adding_address: address})
+      another_person_more.changing({adding_address: new_fake_address.changing({city: city})})
       repo.insert(person)
       repo.insert(another_person)
       repo.insert(another_person_more)
@@ -204,13 +197,10 @@ shared_examples_for "a repo" do
     end
 
     it "finds by city and nickname" do
-      a_random_address.city = "Honolulu"
-      another_person.add_address(a_random_address)
-      person.add_address(address)
-      another_adress_more = PersonFactory.fake_address()
-      another_adress_more.city = city
-      another_person_more.add_address(another_adress_more)
-      another_person_more.nickname = "yoquese"
+      another_person.changing({adding_address: a_random_address.changing({city: "Honolulu"})})
+      person.changing({adding_address: address})
+      another_person_more.changing({adding_address: new_fake_address.changing({city: city}),
+                                    nickname: "yoquese"})
       repo.insert(person)
       repo.insert(another_person)
       repo.insert(another_person_more)
@@ -246,4 +236,8 @@ end
 
 def make_testable(person)
   TestablePerson.new(person)
+end
+
+def new_fake_address
+  PersonFactory.fake_address()
 end
