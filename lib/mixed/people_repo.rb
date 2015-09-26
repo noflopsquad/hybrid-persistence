@@ -25,19 +25,12 @@ class PeopleRepo
     remove_identity(person)
   end
 
-  def find_by fields
-    person_fields = fields.select {|field| includes_field?(field)}
+  def find_by person_fields
     return [] if person_fields.empty?
     descriptors = collection.find(person_fields)
     descriptors.map do |descriptor|
       Person.create_from_descriptor(descriptor)
     end
-  end
-
-  FIELDS = [:first_name, :last_name, :email, :phone, :credit_card, :title, :nickname]
-
-  def includes_field? field
-    FIELDS.include?(field)
   end
 
   private

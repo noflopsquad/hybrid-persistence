@@ -30,20 +30,12 @@ class AddressesRepo
     remove_identity(address)
   end
 
-  def find_by fields
-    address_fields = fields.select {|field| includes_field?(field)}
+  def find_by address_fields
     return [] if address_fields.empty?
     descriptors = collection.find(address_fields)
     descriptors.map do |descriptor|
       Address.create_from_descriptor(descriptor)
     end
-  end
-
-
-  FIELDS = [:street_name, :street_address, :city, :country]
-
-  def includes_field? field
-    FIELDS.include?(field)
   end
 
   private
