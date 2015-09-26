@@ -20,15 +20,9 @@ class TestablePerson < Person
 
   def changing fields
     fields.each do |field|
-      key = field[0]
+      writer_name = field[0].to_s + "="
       value = field[1]
-
-      if :adding_address == key
-        self.add_address(value)
-      else
-        method_name = key.to_s + "="
-        self.send(method_name.to_sym, value)
-      end
+      self.send(writer_name.to_sym, value)
     end
     self
   end

@@ -42,12 +42,10 @@ shared_examples_for "a repo" do
     repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
-    testable_person = make_testable(retrieved)
-    expect(testable_person.email).to eql(email)
-    expect(testable_person.phone).to eql(phone)
-    expect(testable_person.credit_card).to eql(credit_card)
-    expect(testable_person.title).to eql(title)
-    expect(testable_person.nickname).to eql(nickname)
+    expect(testable_person(retrieved)).to have_attributes(
+      email: email, phone: phone, credit_card: credit_card,
+      title: title, nickname: nickname
+    )
   end
 
   it "persists people addresses" do
@@ -57,12 +55,11 @@ shared_examples_for "a repo" do
     repo.insert(person)
     retrieved = repo.read(first_name, last_name)
 
-    testable_person = make_testable(retrieved)
+    testable_person = testable_person(retrieved)
     expect(testable_person.has_address?(street_name, street_address)).to be_truthy
     expect(testable_person.has_address?("Avenida", "Valencia")).to be_falsy
     testable_address = testable_person.retrieve_address(street_name, street_address)
-    expect(testable_address.city).to eq(city)
-    expect(testable_address.country).to eq(country)
+    expect(testable_address).to have_attributes(city: city, country: country)
   end
 
   describe "updating" do
@@ -74,20 +71,18 @@ shared_examples_for "a repo" do
       updated_email = "adios@hola.com"
       updated_nickname = "trikitrok"
 
-      person.phone = updated_phone
-      person.title = updated_title
-      person.credit_card = updated_card
-      person.email = updated_email
-      person.nickname = updated_nickname
+      person.changing(
+        {phone: updated_phone, title: updated_title,
+         credit_card: updated_card,
+         email: updated_email,
+         nickname: updated_nickname})
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
-      testable_person = make_testable(retrieved)
-      expect(testable_person.phone).to eq(updated_phone)
-      expect(testable_person.title).to eq(updated_title)
-      expect(testable_person.credit_card).to eql(updated_card)
-      expect(testable_person.email).to eql(updated_email)
-      expect(testable_person.nickname).to eql(updated_nickname)
+      expect(testable_person(retrieved)).to have_attributes(
+        email: updated_email, phone: updated_phone, credit_card: updated_card,
+        title: updated_title, nickname: updated_nickname
+      )
     end
 
     it "changes existing address" do
@@ -97,15 +92,14 @@ shared_examples_for "a repo" do
       updated_city = "Valencia"
       updated_country = "Catalonia"
 
-      address.city = updated_city
-      address.country = updated_country
+      address.changing({city: updated_city, country: updated_country})
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
-      testable_person = make_testable(retrieved)
-      testable_address = testable_person.retrieve_address(street_name, street_address)
-      expect(testable_address.city).to eq(updated_city)
-      expect(testable_address.country).to eq(updated_country)
+      testable_address = testable_person(retrieved).retrieve_address(street_name, street_address)
+      expect(testable_address).to have_attributes(
+        city: updated_city, country: updated_country
+      )
     end
 
     it "inserts non existing address" do
@@ -115,8 +109,7 @@ shared_examples_for "a repo" do
       repo.update(person)
 
       retrieved = repo.read(first_name, last_name)
-      testable_person = make_testable(retrieved)
-      expect(testable_person.retrieve_address(street_name, street_address)).to eq(address)
+      expect(testable_person(retrieved).retrieve_address(street_name, street_address)).to eq(address)
     end
   end
 
@@ -162,9 +155,7 @@ shared_examples_for "a repo" do
 
       found = repo.find_by({:nickname => "pepito"})
 
-      expect(found).not_to include(random_person)
-      expect(found).to include(another_person)
-      expect(found).to include(person)
+      expect(found).to contain_exactly(another_person, person)
     end
 
     it "finds by nickname and title" do
@@ -175,41 +166,34 @@ shared_examples_for "a repo" do
 
       found = repo.find_by({:nickname => "pepito", :title => "God"})
 
-      expect(found).not_to include(random_person)
-      expect(found).not_to include(person)
-      expect(found).to include(another_person)
-      expect(found).to include(another_person_more)
+      expect(found).to contain_exactly(another_person, another_person_more)
     end
 
     it "finds by city" do
-      another_person.changing({adding_address: a_random_address.changing({city: "Honolulu"})})
-      person.changing({adding_address: address})
-      another_person_more.changing({adding_address: new_fake_address.changing({city: city})})
+      another_person.add_address(a_random_address.changing({city: "Honolulu"}))
+      person.add_address(address)
+      another_person_more.add_address(new_fake_address.changing({city: city}))
       repo.insert(person)
       repo.insert(another_person)
       repo.insert(another_person_more)
 
       found = repo.find_by({:city => city})
 
-      expect(found).to include(person)
-      expect(found).not_to include(another_person)
-      expect(found).to include(another_person_more)
+      expect(found).to contain_exactly(person, another_person_more)
     end
 
     it "finds by city and nickname" do
-      another_person.changing({adding_address: a_random_address.changing({city: "Honolulu"})})
-      person.changing({adding_address: address})
-      another_person_more.changing({adding_address: new_fake_address.changing({city: city}),
-                                    nickname: "yoquese"})
+      another_person.add_address(a_random_address.changing({city: "Honolulu"}))
+      person.add_address(address)
+      another_person_more.add_address(new_fake_address.changing({city: city}))
+      another_person_more.changing({nickname: "yoquese"})
       repo.insert(person)
       repo.insert(another_person)
       repo.insert(another_person_more)
 
       found = repo.find_by({:city => city, :nickname => "yoquese"})
 
-      expect(found).not_to include(person)
-      expect(found).not_to include(another_person)
-      expect(found).to include(another_person_more)
+      expect(found).to contain_exactly(another_person_more)
     end
   end
 end
@@ -234,10 +218,24 @@ def a_person
   PersonBuilder.new
 end
 
-def make_testable(person)
+def testable_person(person)
   TestablePerson.new(person)
+end
+
+def testable_address(address)
+  TestableAddress.new(address)
 end
 
 def new_fake_address
   PersonFactory.fake_address()
+end
+
+def expect_person_having retrieved, fields
+  testable_person = testable_person(retrieved)
+
+  fields.each do |field|
+    field_reader = field[0].to_sym
+    expected_value = field[1]
+    expect(testable_person.send(field_reader)).to eql (expected_value)
+  end
 end
