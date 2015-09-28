@@ -29,17 +29,24 @@ class AddressesRepo
     remove_identity(address)
   end
 
-  def find_by address_fields
-    return [] if address_fields.empty?
-    descriptors = collection.find(address_fields)
-    descriptors.map do |descriptor|
-      Address.create_from_descriptor(descriptor)
-    end
+  def find_by fields
+    address_fields = fields.select {|field| ADDRESSES_FIELDS.include?(field)}
+    found_addresses = retrieve_by_addresses(address_fields)
   end
 
   private
+  ADDRESSES_FIELDS = [:city, :country]
+
   def collection
     @mongo[:address_states]
+  end
+
+  def retrieve_by_addresses addresses_fields
+    return [] if addresses_fields.empty?
+    descriptors = collection.find(addresses_fields)
+    descriptors.map do |descriptor|
+      Address.create_from_descriptor(descriptor)
+    end
   end
 
   def update_state address

@@ -23,17 +23,24 @@ class PeopleRepo
     remove_identity(person)
   end
 
-  def find_by person_fields
-    return [] if person_fields.empty?
-    descriptors = collection.find(person_fields)
-    descriptors.map do |descriptor|
-      Person.create_from_descriptor(descriptor)
-    end
+  def find_by fields
+    people_fields = fields.select {|field| PEOPLE_FIELDS.include?(field)}
+    retrieve_by(people_fields)
   end
 
   private
+  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
+
   def collection
     @mongo[:person_states]
+  end
+
+  def retrieve_by people_fields
+    return [] if people_fields.empty?
+    descriptors = collection.find(people_fields)
+    descriptors.map do |descriptor|
+      Person.create_from_descriptor(descriptor)
+    end
   end
 
   def update_state person

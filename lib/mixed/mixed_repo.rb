@@ -1,6 +1,7 @@
 require 'forwardable'
 require './lib/mixed/people_repo'
 require './lib/mixed/addresses_repo'
+require './lib/mixed/people_addresses_relationship'
 require './lib/mixed/address_identity'
 require 'set'
 
@@ -10,6 +11,7 @@ class MixedRepo
     @mongo = Connections.mongo
     @people = PeopleRepo.new(@sql, @mongo)
     @addresses = AddressesRepo.new(@sql, @mongo)
+    @people_addresses_repo = PeopleAddressesRelationship.new(@sql)
   end
 
   def insert person
@@ -43,50 +45,39 @@ class MixedRepo
   end
 
   private
-
-  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
-  ADDRESSES_FIELDS = [:city, :country]
-
   def retrieve_people_by fields
-    found_in_people = retrieve_by_people(fields)
-    found_in_addresses = retrieve_by_addresses(fields)
+    found_in_people = retrieve_people(fields)
+    found_in_addresses = retrieve_addresses(fields)
     mix(found_in_people, found_in_addresses)
   end
 
   def mix found_in_people, found_in_addresses
-    return found_in_people if found_in_addresses.empty?
-    return found_in_addresses if found_in_people.empty?
+    return found_in_people.to_a if found_in_addresses.empty?
+    return found_in_addresses.to_a if found_in_people.empty?
     found_in_people.intersection(found_in_addresses).to_a
   end
 
-  def retrieve_by_people fields
-    person_fields = fields.select {|field| PEOPLE_FIELDS.include?(field)}
-    found_people = @people.find_by(person_fields)
+  def retrieve_people fields
+    found_people = @people.find_by(fields)
     Set.new(found_people)
   end
 
-  def retrieve_by_addresses fields
-    address_fields = fields.select {|field| ADDRESSES_FIELDS.include?(field)}
-    found_addresses = @addresses.find_by(address_fields)
+  def retrieve_addresses fields
+    found_addresses = @addresses.find_by(fields)
     found_people = retrieve_people_associated_to(found_addresses)
     Set.new(found_people)
   end
 
   def retrieve_people_associated_to addresses
     addresses.map do |address|
-      retrieve_person_associated_to(AccessibleAddress.new(address))
+      retrieve_person_associated_to(address)
     end
   end
 
   def retrieve_person_associated_to address
-    query = """
-      SELECT p.first_name, p.last_name FROM mixed_people AS p INNER JOIN mixed_addresses AS a
-      ON p.id = a.person_id
-      where a.street_name = ? AND a.street_address = ?
-      """
-    where = [address.street_name, address.street_address]
-    person_identity = @sql.execute(query, where).first
-    @people.read(person_identity["first_name"], person_identity["last_name"])
+    accessible = AccessibleAddress.new(address)
+    person_identity = @people_addresses_repo.retrieve_person_associated_to(accessible)
+    @people.read(person_identity.first_name, person_identity.last_name)
   end
 
   def delete_addresses person
