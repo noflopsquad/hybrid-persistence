@@ -47,7 +47,7 @@ class MixedRepo
   private
   def retrieve_people_by fields
     found_in_people = retrieve_people(fields)
-    found_in_addresses = retrieve_addresses(fields)
+    found_in_addresses = retrieve_addresses_by(fields)
     mix(found_in_people, found_in_addresses)
   end
 
@@ -62,7 +62,7 @@ class MixedRepo
     Set.new(found_people)
   end
 
-  def retrieve_addresses fields
+  def retrieve_addresses_by fields
     found_addresses = @addresses.find_by(fields)
     found_people = retrieve_people_associated_to(found_addresses)
     Set.new(found_people)

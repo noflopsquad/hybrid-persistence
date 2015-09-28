@@ -3,7 +3,7 @@ class PeopleSqlite3
     @db = Connections.sql
   end
 
-  def persist_person(person)
+  def insert_person person
     command = """
       INSERT INTO people (first_name, last_name, phone, email, title, credit_card, nickname)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -24,7 +24,7 @@ class PeopleSqlite3
     @db.last_insert_row_id
   end
 
-  def persist_address address, id
+  def insert_address address, id
     command = """
       INSERT INTO addresses(street_name, street_address, city, person_id, country)
       VALUES (?, ?, ?, ?, ?)
@@ -46,7 +46,7 @@ class PeopleSqlite3
     @db.execute(query, data)
   end
 
-  def retrieve_person first_name, last_name
+  def read_person first_name, last_name
     query = """
       SELECT * FROM people WHERE first_name = ? AND last_name = ?
       """
@@ -69,7 +69,7 @@ class PeopleSqlite3
   end
 
   def delete_person person
-    id = retrieve_person_id(person)
+    id = read_person_id(person)
     command = """
       DELETE FROM people WHERE id=?
       """
@@ -78,7 +78,7 @@ class PeopleSqlite3
   end
 
   def delete_addresses person
-    id = retrieve_person_id(person)
+    id = read_person_id(person)
     command = """
       DELETE FROM addresses WHERE person_id=?
       """
@@ -86,14 +86,14 @@ class PeopleSqlite3
     @db.execute(command, where)
   end
 
-  def retrieve_addresses_of person_id
+  def read_addresses_of person_id
     query = """
       SELECT * FROM addresses WHERE person_id = ?
       """
     @db.execute(query, [person_id])
   end
 
-  def retrieve_person_id person
+  def read_person_id person
     query = """
       SELECT id FROM people WHERE first_name=? AND last_name=?
       """
@@ -102,17 +102,17 @@ class PeopleSqlite3
     return records.first["id"] unless records.empty?
   end
 
-  def change_address address, id
+  def update_address address, id
     if address_exists?(id)
-      update_address(address, id)
+      change_address(address, id)
     else
-      persist_address(address, id)
+      insert_address(address, id)
     end
   end
 
   private
 
-  def update_address address, id
+  def change_address address, id
     command = """
       UPDATE addresses SET city=?, country=? WHERE person_id=?
       """

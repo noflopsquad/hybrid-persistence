@@ -30,7 +30,7 @@ class PeopleMongo
     @mongo[:people].find(query_hash)
   end
 
-  def retrieve_person first_name, last_name
+  def read first_name, last_name
     @mongo[:people].find(first_name: first_name, last_name: last_name).first
   end
 

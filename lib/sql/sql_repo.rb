@@ -13,13 +13,13 @@ class SqlRepo
   def insert person
     ripped_person = RippedPerson.new(person)
     addresses = ripped_person.addresses
-    @sql.persist_person(ripped_person)
+    @sql.insert_person(ripped_person)
     person_id = @sql.last_insert
     persist_addresses(addresses, person_id)
   end
 
   def read first_name, last_name
-    person_descriptor = @sql.retrieve_person(first_name, last_name)
+    person_descriptor = @sql.read_person(first_name, last_name)
     build_person(person_descriptor)
   end
 
@@ -56,15 +56,11 @@ class SqlRepo
   end
 
   def update_addresses person
-    id = @sql.retrieve_person_id(person)
+    id = @sql.read_person_id(person)
     person.addresses.each do |address|
-      change(address, id)
+      ripped_address = RippedAddress.new(address)
+      @sql.update_address(ripped_address, id)
     end
-  end
-
-  def change address, id
-    ripped_address = RippedAddress.new(address)
-    @sql.change_address(ripped_address, id)
   end
 
   def extract_id person_descriptor
@@ -78,7 +74,7 @@ class SqlRepo
   end
 
   def addresses_for person_id
-    addresses = @sql.retrieve_addresses_of(person_id)
+    addresses = @sql.read_addresses_of(person_id)
     addresses.map do |address_descriptor|
       Address.create_from(address_descriptor)
     end
@@ -87,7 +83,7 @@ class SqlRepo
   def persist_addresses(addresses, person_id)
     addresses.each do |address|
       ripped_address = RippedAddress.new(address)
-      @sql.persist_address(ripped_address, person_id)
+      @sql.insert_address(ripped_address, person_id)
     end
   end
 

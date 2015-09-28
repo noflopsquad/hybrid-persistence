@@ -61,7 +61,7 @@ class NoSqlRepo
   end
 
   def retrieve_person first_name, last_name
-    person_descriptor = @no_sql.retrieve_person(first_name, last_name)
+    person_descriptor = @no_sql.read(first_name, last_name)
     raise NotFound.new if person_descriptor.nil?
     person_descriptor
   end

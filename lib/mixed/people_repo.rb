@@ -14,7 +14,7 @@ class PeopleRepo
 
   def read first_name, last_name
     check_existence!(first_name, last_name)
-    descriptor = @state_repo.retrieve(first_name, last_name)
+    descriptor = @state_repo.read(first_name, last_name)
     to_person(descriptor)
   end
 

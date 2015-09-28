@@ -19,7 +19,7 @@ class PeopleStateRepo
     )
   end
 
-  def retrieve first_name, last_name
+  def read first_name, last_name
     state = collection.find(
       first_name: first_name,
       last_name: last_name

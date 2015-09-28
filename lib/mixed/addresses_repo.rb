@@ -14,7 +14,7 @@ class AddressesRepo
   end
 
   def read person_identity
-    addresses_identities = @identity_repo.retrieve(person_identity)
+    addresses_identities = @identity_repo.read(person_identity)
     retrieve_addresses(addresses_identities)
   end
 
