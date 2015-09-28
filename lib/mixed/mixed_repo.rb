@@ -59,14 +59,6 @@ class MixedRepo
     found_in_people.intersection(found_in_addresses).to_a
   end
 
-  def retrieve_only_by_people fields
-    retrieve_by_people(fields).to_a
-  end
-
-  def retrieve_only_by_addresses fields
-    retrieve_by_addresses(fields).to_a
-  end
-
   def retrieve_by_people fields
     person_fields = fields.select {|field| PEOPLE_FIELDS.include?(field)}
     found_people = @people.find_by(person_fields)
