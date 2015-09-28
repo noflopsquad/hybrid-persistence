@@ -1,11 +1,13 @@
+require './lib/mixed/people_identity_repo'
+
 class PeopleRepo
   def initialize(sql, mongo)
-    @sql = sql
+    @identity_repo = PeopleIdentityRepo.new(sql)
     @mongo = mongo
   end
 
   def insert person
-    persist_identity(person)
+    @identity_repo.persist(person)
     persist_state(person)
   end
 
@@ -20,7 +22,7 @@ class PeopleRepo
 
   def delete person
     remove_state(person)
-    remove_identity(person)
+    @identity_repo.remove(person)
   end
 
   def find_by fields
@@ -52,14 +54,6 @@ class PeopleRepo
     )
   end
 
-  def remove_identity person
-    command = """
-      DELETE FROM mixed_people WHERE first_name = ? AND last_name = ?
-      """
-    data = [person.first_name, person.last_name]
-    @sql.execute(command, data)
-  end
-
   def remove_state person
     collection.find_one_and_delete(
       {first_name: person.first_name,
@@ -76,19 +70,7 @@ class PeopleRepo
   end
 
   def check_existence! first_name, last_name
-    query = """
-      SELECT COUNT(*) FROM mixed_people WHERE first_name = ? AND last_name = ?
-      """
-    records = @sql.execute(query, [first_name, last_name])
-    raise NotFound.new if records[0][0] == 0
-  end
-
-  def persist_identity person
-    command = """
-      INSERT INTO mixed_people (id, first_name, last_name) VALUES (?, ?, ?)
-      """
-    data = [person.identity, person.first_name, person.last_name]
-    @sql.execute(command, data)
+    raise NotFound.new unless @identity_repo.exists?(first_name, last_name)
   end
 
   def persist_state person
