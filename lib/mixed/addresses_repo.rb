@@ -1,4 +1,3 @@
-require './lib/connections'
 require './lib/mixed/address_identity'
 
 class AddressesRepo

@@ -1,5 +1,3 @@
-require './lib/connections'
-
 class PeopleRepo
   def initialize(sql, mongo)
     @sql = sql
