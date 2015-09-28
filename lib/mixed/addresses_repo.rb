@@ -1,94 +1,58 @@
 require './lib/mixed/address_identity'
 require './lib/mixed/addresses_identity_repo'
+require './lib/mixed/addresses_state_repo'
 
 class AddressesRepo
-  def initialize(sql, mongo)
+  def initialize sql, mongo
     @identity_repo = AddressesIdentityRepo.new(sql)
-    @mongo = mongo
+    @state_repo = AddressesStateRepo.new(mongo)
   end
 
   def insert address, person_identity
     @identity_repo.persist(address, person_identity)
-    persist_state(address)
+    @state_repo.persist(address)
   end
 
   def read person_identity
-    addresses_descriptors = @identity_repo.retrieve(person_identity)
-    build_addresses(addresses_descriptors)
+    addresses_identities = @identity_repo.retrieve(person_identity)
+    retrieve_addresses(addresses_identities)
   end
 
   def update address, person_identity
     if address_exists?(address, person_identity)
-      update_state(address)
+      @state_repo.update(address)
     else
       insert(address, person_identity)
     end
   end
 
   def delete address
-    remove_state(address)
+    @state_repo.remove(address)
     @identity_repo.remove(address)
   end
 
   def find_by fields
-    address_fields = fields.select {|field| ADDRESSES_FIELDS.include?(field)}
-    found_addresses = retrieve_by_addresses(address_fields)
+    descriptors = @state_repo.find_by(fields)
+    build_addresses(descriptors)
   end
 
   private
-  ADDRESSES_FIELDS = [:city, :country]
-
-  def collection
-    @mongo[:address_states]
-  end
-
-  def retrieve_by_addresses addresses_fields
-    return [] if addresses_fields.empty?
-    descriptors = collection.find(addresses_fields)
-    descriptors.map do |descriptor|
-      Address.create_from_descriptor(descriptor)
-    end
-  end
-
-  def update_state address
-    state = address.variable_states.merge(
-      street_name: address.street_name,
-      street_address: address.street_address
-    )
-    collection.find_one_and_update(
-      {street_name: address.street_name,
-       street_address: address.street_address},
-      state
-    )
-  end
 
   def address_exists? address, person_identity
     addresses = read(person_identity)
     addresses.include?(address)
   end
 
-  def remove_state address
-    address_identity = AddressIdentity.new(address.street_name, address.street_address).hash
-    collection.find_one_and_delete({street_name: address.street_name,
-                                    street_address: address.street_address})
-  end
-
   def build_addresses descriptors
     descriptors.map do |descriptor|
-      build_address(descriptor)
+      Address.create_from_descriptor(descriptor)
     end
   end
 
-  def build_address descriptor
-    state = collection.find(street_name: descriptor["street_name"],
-                            street_address: descriptor["street_address"]).first
-
-    Address.create_from_descriptor(state)
-  end
-
-  def persist_state address
-    state = address.variable_states.merge(street_name: address.street_name,
-                                          street_address: address.street_address)
-    collection.insert_one(state)
+  def retrieve_addresses addresses_identities
+    descriptors = addresses_identities.map do |address_identity|
+      @state_repo.read(address_identity["street_name"], address_identity["street_address"])
+    end
+    build_addresses(descriptors)
   end
 end
