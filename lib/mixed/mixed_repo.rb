@@ -44,6 +44,9 @@ class MixedRepo
 
   private
 
+  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
+  ADDRESSES_FIELDS = [:city, :country]
+
   def retrieve_people_by fields
     return retrieve_only_by_people(fields) if only_people?(fields)
     return retrieve_only_by_addresses(fields) if only_addresses?(fields)
@@ -51,11 +54,11 @@ class MixedRepo
   end
 
   def only_people? fields
-    fields.all? { |field| AccessiblePerson.includes_field?(field.first) }
+    fields.all? { |field| PEOPLE_FIELDS.include?(field.first) }
   end
 
   def only_addresses? fields
-    fields.all? { |field| AccessibleAddress.includes_field?(field.first) }
+    fields.all? { |field| ADDRESSES_FIELDS.include?(field.first) }
   end
 
   def retrieve_by_all fields
@@ -73,13 +76,13 @@ class MixedRepo
   end
 
   def retrieve_by_people fields
-    person_fields = fields.select {|field| AccessiblePerson.includes_field?(field)}
+    person_fields = fields.select {|field| PEOPLE_FIELDS.include?(field)}
     found_people = @people.find_by(person_fields)
     Set.new(found_people)
   end
 
   def retrieve_by_addresses fields
-    address_fields = fields.select {|field| AccessibleAddress.includes_field?(field)}
+    address_fields = fields.select {|field| ADDRESSES_FIELDS.include?(field)}
     found_addresses = @addresses.find_by(address_fields)
     found_people = retrieve_people_associated_to(found_addresses)
     Set.new(found_people)
@@ -150,10 +153,6 @@ class MixedRepo
       return [] if variable_states[:addresses].nil?
       variable_states[:addresses]
     end
-
-    def self.includes_field? field
-      variable_state_fields.include?(field)
-    end
   end
 
   class AccessibleAddress < Address
@@ -167,10 +166,6 @@ class MixedRepo
 
     def identity
       AddressIdentity.new(street_name, street_address).hash
-    end
-
-    def self.includes_field? field
-      variable_state_fields.include?(field)
     end
   end
 end

@@ -43,6 +43,9 @@ class SqlRepo
 
   private
 
+  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
+  ADDRESSES_FIELDS = [:city, :country]
+
   def find_people fields
     query = create_find_by_query(fields)
     data = fields.values
@@ -63,8 +66,8 @@ class SqlRepo
   end
 
   def compose_field_name field_name
-    return "people." + field_name.to_s if RippedPerson.has_field?(field_name)
-    return "addresses." + field_name.to_s if RippedAddress.has_field?(field_name)
+    return "people." + field_name.to_s if PEOPLE_FIELDS.include?(field_name)
+    return "addresses." + field_name.to_s if ADDRESSES_FIELDS.include?(field_name)
   end
 
   def build_person person_descriptor
@@ -243,10 +246,6 @@ class SqlRepo
       @address = address
     end
 
-    def self.has_field? field
-      variable_state_fields.include?(field)
-    end
-
     private
     def self.define_readers
       variable_state_fields.each do |state|
@@ -268,10 +267,6 @@ class SqlRepo
     def addresses
       return [] if @person.variable_states[:addresses].nil?
       @person.variable_states[:addresses]
-    end
-
-    def self.has_field? field
-      variable_state_fields.include?(field)
     end
 
     private

@@ -47,13 +47,16 @@ class MongoRepo
 
   private
 
+  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
+  ADDRESSES_FIELDS = [:city, :country]
+
   def compose_query_hash fields
     fields.inject({}) do |query_hash_so_far, field|
       key = field[0]
       value = field[1]
-      if SerializablePerson.person_field?(key)
+      if PEOPLE_FIELDS.include?(key)
         query_hash_so_far[key] = value
-      elsif SerializableAddress.addresses_field?(key)
+      elsif ADDRESSES_FIELDS.include?(key)
         query_hash_so_far["addresses." + key.to_s] = value
       end
       query_hash_so_far
@@ -105,10 +108,6 @@ class MongoRepo
       result
     end
 
-    def self.person_field? field
-      variable_state_fields.include?(field)
-    end
-
     private
 
     def serialize_addresses
@@ -132,10 +131,6 @@ class MongoRepo
 
       result.merge!(@address.variable_states)
       result
-    end
-
-    def self.addresses_field? field
-      variable_state_fields.include?(field)
     end
   end
 end
