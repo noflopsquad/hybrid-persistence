@@ -1,89 +1,50 @@
 require './lib/mixed/people_identity_repo'
+require './lib/mixed/people_state_repo'
 
 class PeopleRepo
   def initialize(sql, mongo)
     @identity_repo = PeopleIdentityRepo.new(sql)
-    @mongo = mongo
+    @state_repo = PeopleStateRepo.new(mongo)
   end
 
   def insert person
     @identity_repo.persist(person)
-    persist_state(person)
+    @state_repo.persist(person)
   end
 
   def read first_name, last_name
     check_existence!(first_name, last_name)
-    retrieve_person(first_name, last_name)
+    descriptor = @state_repo.retrieve(first_name, last_name)
+    to_person(descriptor)
   end
 
   def update person
-    update_state(person)
+    @state_repo.update(person)
   end
 
   def delete person
-    remove_state(person)
+    @state_repo.remove(person)
     @identity_repo.remove(person)
   end
 
   def find_by fields
-    people_fields = fields.select {|field| PEOPLE_FIELDS.include?(field)}
-    retrieve_by(people_fields)
+    descriptors = @state_repo.find_by(fields)
+    to_people(descriptors)
   end
 
   private
-  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
-
-  def collection
-    @mongo[:person_states]
-  end
-
-  def retrieve_by people_fields
-    return [] if people_fields.empty?
-    descriptors = collection.find(people_fields)
-    descriptors.map do |descriptor|
-      Person.create_from_descriptor(descriptor)
-    end
-  end
-
-  def update_state person
-    state = extract_person_state(person)
-    collection.find_one_and_update(
-      {first_name: person.first_name,
-       last_name: person.last_name},
-      state
-    )
-  end
-
-  def remove_state person
-    collection.find_one_and_delete(
-      {first_name: person.first_name,
-       last_name: person.last_name}
-    )
-  end
-
-  def retrieve_person first_name, last_name
-    state = collection.find(
-      first_name: first_name,
-      last_name: last_name
-    ).first
-    Person.create_from_descriptor(state)
-  end
 
   def check_existence! first_name, last_name
     raise NotFound.new unless @identity_repo.exists?(first_name, last_name)
   end
 
-  def persist_state person
-    state = extract_person_state(person)
-    collection.insert_one(state)
+  def to_person descriptor
+    Person.create_from_descriptor(descriptor)
   end
 
-  def extract_person_state person
-    state = person.variable_states.merge(
-      first_name: person.first_name,
-      last_name: person.last_name
-    )
-    state.delete(:addresses)
-    state
+  def to_people descriptors
+    descriptors.map do |descriptor|
+      to_person(descriptor)
+    end
   end
 end
