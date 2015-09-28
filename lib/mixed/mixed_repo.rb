@@ -48,22 +48,14 @@ class MixedRepo
   ADDRESSES_FIELDS = [:city, :country]
 
   def retrieve_people_by fields
-    return retrieve_only_by_people(fields) if only_people?(fields)
-    return retrieve_only_by_addresses(fields) if only_addresses?(fields)
-    return retrieve_by_all(fields)
-  end
-
-  def only_people? fields
-    fields.all? { |field| PEOPLE_FIELDS.include?(field.first) }
-  end
-
-  def only_addresses? fields
-    fields.all? { |field| ADDRESSES_FIELDS.include?(field.first) }
-  end
-
-  def retrieve_by_all fields
     found_in_people = retrieve_by_people(fields)
     found_in_addresses = retrieve_by_addresses(fields)
+    mix(found_in_people, found_in_addresses)
+  end
+
+  def mix found_in_people, found_in_addresses
+    return found_in_people if found_in_addresses.empty?
+    return found_in_addresses if found_in_people.empty?
     found_in_people.intersection(found_in_addresses).to_a
   end
 
