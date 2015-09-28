@@ -45,7 +45,7 @@ class AddressesRepo
 
   def build_addresses descriptors
     descriptors.map do |descriptor|
-      Address.create_from_descriptor(descriptor)
+      Address.create_from(descriptor)
     end
   end
 

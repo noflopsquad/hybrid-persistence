@@ -42,7 +42,7 @@ class NoSqlRepo
   ADDRESSES_FIELDS = [:city, :country]
 
   def build_person person_descriptor
-    person = Person.create_from_descriptor(person_descriptor)
+    person = Person.create_from(person_descriptor)
     addresses = build_addresses(person_descriptor)
     add_addresses(person, addresses)
     person
@@ -56,7 +56,7 @@ class NoSqlRepo
 
   def build_addresses person_descriptor
     person_descriptor[:addresses].map do |address_descriptor|
-      Address.create_from_descriptor(address_descriptor)
+      Address.create_from(address_descriptor)
     end
   end
 

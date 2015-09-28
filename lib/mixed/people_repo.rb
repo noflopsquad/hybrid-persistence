@@ -39,7 +39,7 @@ class PeopleRepo
   end
 
   def to_person descriptor
-    Person.create_from_descriptor(descriptor)
+    Person.create_from(descriptor)
   end
 
   def to_people descriptors

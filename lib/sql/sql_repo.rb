@@ -48,7 +48,7 @@ class SqlRepo
   ADDRESSES_FIELDS = [:city, :country]
 
   def build_person person_descriptor
-    person = Person.create_from_descriptor(person_descriptor)
+    person = Person.create_from(person_descriptor)
     person_id = extract_id(person_descriptor)
     addresses = addresses_for(person_id)
     add_addresses(person, addresses)
@@ -80,7 +80,7 @@ class SqlRepo
   def addresses_for person_id
     addresses = @sql.retrieve_addresses_of(person_id)
     addresses.map do |address_descriptor|
-      Address.create_from_descriptor(address_descriptor)
+      Address.create_from(address_descriptor)
     end
   end
 

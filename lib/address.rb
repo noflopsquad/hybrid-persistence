@@ -13,7 +13,7 @@ class Address
 
   alias_method :eql?, :==
 
-  def self.create_from_descriptor(descriptor)
+  def self.create_from(descriptor)
     address = Address.new(descriptor["street_name"], descriptor["street_address"])
     variable_state_fields.each do |field|
       address.send(:variable_states)[field] = descriptor[field.to_s]

@@ -29,7 +29,7 @@ class Person
     identity
   end
 
-  def self.create_from_descriptor(descriptor)
+  def self.create_from(descriptor)
     person = Person.new(descriptor["first_name"], descriptor["last_name"])
     variable_state_fields.each do |field|
       person.send(:variable_states)[field] = descriptor[field.to_s]
