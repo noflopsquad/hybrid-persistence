@@ -2,15 +2,16 @@ require './lib/connections'
 require './lib/person'
 require './lib/address'
 require './lib/not_found'
+require './lib/no_sql/people_mongo'
 
 class MongoRepo
   def initialize
-    @mongo = Connections.mongo
+    @no_sql = PeopleMongo.new
   end
 
   def insert person
     serializable = SerializablePerson.new(person)
-    @mongo[:people].insert_one(serializable.to_h)
+    @no_sql.insert(serializable)
   end
 
   def read first_name, last_name
@@ -19,27 +20,17 @@ class MongoRepo
   end
 
   def update person
-    serializable_person = SerializablePerson.new(person)
-    person_hash = serializable_person.to_h
-    @mongo[:people].find_one_and_update(
-      { first_name: person_hash[:first_name],
-        last_name: person_hash[:last_name]
-        }, person_hash)
+    serializable = SerializablePerson.new(person)
+    @no_sql.update(serializable)
   end
 
   def delete person
-    serializable_person = SerializablePerson.new(person)
-    person_hash = serializable_person.to_h
-    @mongo[:people].find_one_and_delete(
-      {
-        first_name: person_hash[:first_name],
-        last_name: person_hash[:last_name]
-      }
-    )
+    serializable = SerializablePerson.new(person)
+    @no_sql.delete(serializable)
   end
 
   def find_by fields
-    person_descriptors = @mongo[:people].find(compose_query_hash(fields))
+    person_descriptors = @no_sql.find_by(fields, PEOPLE_FIELDS, ADDRESSES_FIELDS)
     person_descriptors.map do |person_descriptor|
       build_person(person_descriptor)
     end
@@ -50,21 +41,8 @@ class MongoRepo
   PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
   ADDRESSES_FIELDS = [:city, :country]
 
-  def compose_query_hash fields
-    fields.inject({}) do |query_hash_so_far, field|
-      key = field[0]
-      value = field[1]
-      if PEOPLE_FIELDS.include?(key)
-        query_hash_so_far[key] = value
-      elsif ADDRESSES_FIELDS.include?(key)
-        query_hash_so_far["addresses." + key.to_s] = value
-      end
-      query_hash_so_far
-    end
-  end
-
   def build_person person_descriptor
-    person = to_person(person_descriptor)
+    person = Person.create_from_descriptor(person_descriptor)
     addresses = build_addresses(person_descriptor)
     add_addresses(person, addresses)
     person
@@ -76,20 +54,16 @@ class MongoRepo
     end
   end
 
-  def build_addresses descriptor
-    descriptor[:addresses].map do |address_descriptor|
+  def build_addresses person_descriptor
+    person_descriptor[:addresses].map do |address_descriptor|
       Address.create_from_descriptor(address_descriptor)
     end
   end
 
   def retrieve_person first_name, last_name
-    person = @mongo[:people].find(first_name: first_name, last_name: last_name).first
-    raise NotFound.new if person.nil?
-    person
-  end
-
-  def to_person descriptor
-    Person.create_from_descriptor(descriptor)
+    person_descriptor = @no_sql.retrieve_person(first_name, last_name)
+    raise NotFound.new if person_descriptor.nil?
+    person_descriptor
   end
 
   class SerializablePerson < Person

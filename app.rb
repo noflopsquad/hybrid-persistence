@@ -1,6 +1,6 @@
 require 'sinatra/base'
 require 'json'
-require './lib/mongo/mongo_repo'
+require './lib/no_sql/no_sql_repo'
 require './lib/mixed/mixed_repo'
 require './lib/sql/sql_repo'
 require './lib/person_factory'
@@ -9,16 +9,16 @@ require 'benchmark'
 require 'mongo'
 
 class App < Sinatra::Base
-	
+
   before do
     Mongo::Logger.logger.level = Logger::WARN
   end
 
-	get '/create' do
-		person = PersonFactory.fake_it
-		result = people.insert(person)
-		halt 500 unless result == 1
-	end
+  get '/create' do
+    person = PersonFactory.fake_it
+    result = people.insert(person)
+    halt 500 unless result == 1
+  end
 
   get '/read/:first_name/:last_name', provides: :json do
     begin
