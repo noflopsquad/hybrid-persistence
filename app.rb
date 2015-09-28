@@ -54,7 +54,7 @@ class App < Sinatra::Base
 
   def insert_mongo persons
     persons.each do |person|
-      mongo_repo.insert(person)
+      no_sql_repo.insert(person)
     end
   end
 
@@ -68,8 +68,8 @@ class App < Sinatra::Base
     @sql_repo ||= SqlRepo.new
   end
 
-  def mongo_repo
-    @mongo_repo ||= MongoRepo.new
+  def no_sql_repo
+    @no_sql_repo ||= NoSqlRepo.new
   end
 
   def mixed_repo

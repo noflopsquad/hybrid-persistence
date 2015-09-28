@@ -196,7 +196,7 @@ shared_examples_for "a repo" do
   end
 end
 
-describe MongoRepo do
+describe NoSqlRepo do
   it_behaves_like "a repo"
 end
 

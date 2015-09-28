@@ -4,7 +4,7 @@ require './lib/address'
 require './lib/not_found'
 require './lib/no_sql/people_mongo'
 
-class MongoRepo
+class NoSqlRepo
   def initialize
     @no_sql = PeopleMongo.new
   end
