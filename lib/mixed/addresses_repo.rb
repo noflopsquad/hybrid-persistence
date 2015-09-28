@@ -1,18 +1,19 @@
 require './lib/mixed/address_identity'
+require './lib/mixed/addresses_identity_repo'
 
 class AddressesRepo
   def initialize(sql, mongo)
-    @sql = sql
+    @identity_repo = AddressesIdentityRepo.new(sql)
     @mongo = mongo
   end
 
   def insert address, person_identity
-    persist_identity(address, person_identity)
+    @identity_repo.persist(address, person_identity)
     persist_state(address)
   end
 
   def read person_identity
-    addresses_descriptors = retrieve_descriptors(person_identity)
+    addresses_descriptors = @identity_repo.retrieve(person_identity)
     build_addresses(addresses_descriptors)
   end
 
@@ -26,7 +27,7 @@ class AddressesRepo
 
   def delete address
     remove_state(address)
-    remove_identity(address)
+    @identity_repo.remove(address)
   end
 
   def find_by fields
@@ -66,14 +67,6 @@ class AddressesRepo
     addresses.include?(address)
   end
 
-  def remove_identity address
-    command = """
-      DELETE FROM mixed_addresses WHERE street_name=?, street_address=?
-      """
-    data = [address.street_name, address.street_address]
-    @sql.execute(command, data)
-  end
-
   def remove_state address
     address_identity = AddressIdentity.new(address.street_name, address.street_address).hash
     collection.find_one_and_delete({street_name: address.street_name,
@@ -91,26 +84,6 @@ class AddressesRepo
                             street_address: descriptor["street_address"]).first
 
     Address.create_from_descriptor(state)
-  end
-
-  def retrieve_descriptors person_identity
-    query = """
-      SELECT street_name, street_address FROM mixed_addresses WHERE person_id=?
-      """
-    @sql.execute(query, person_identity)
-  end
-
-  def persist_identity address, person_identity
-    command = """
-      INSERT INTO mixed_addresses (street_name, street_address, person_id)
-      VALUES (?, ?, ?)
-      """
-    data = [
-      address.street_name,
-      address.street_address,
-      person_identity
-    ]
-    @sql.execute(command, data)
   end
 
   def persist_state address
