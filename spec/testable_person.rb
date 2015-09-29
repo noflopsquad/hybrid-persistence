@@ -8,6 +8,7 @@ class TestablePerson < Person
   end
 
   def has_address? street_name, street_address
+    return false unless @person.variable_states.keys.include?(:addresses)
     @person.variable_states[:addresses].include?(Address.new(street_name, street_address))
   end
 

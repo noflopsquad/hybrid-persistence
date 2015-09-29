@@ -144,6 +144,19 @@ shared_examples_for "a repo" do
       retrieved = repo.read(first_name, last_name)
       expect(testable_person(retrieved).retrieve_address(street_name, street_address)).to eq(address)
     end
+
+    it "archives pre-update person data when a non existing address gets inserted" do
+      repo.insert(person)
+      person.add_address(address)
+
+      repo.update(person)
+
+      archived_versions = repo.read_archived(first_name, last_name)
+      archived_person = testable_person(archived_versions.first)
+      expect(
+        archived_person.has_address?(address.street_name, address.street_address)
+      ).to be false
+    end
   end
 
   describe "deleting people" do
@@ -153,6 +166,16 @@ shared_examples_for "a repo" do
       repo.delete(person)
 
       expect {repo.read(first_name, last_name)}.to raise_error(NotFound)
+    end
+
+    it "archives pre-delete person data" do
+      repo.insert(person)
+
+      repo.delete(person)
+
+      archived_versions = repo.read_archived(first_name, last_name)
+      archived_person = testable_person(archived_versions.first)
+      expect(archived_person).to eq(person)
     end
 
     it "is idempotent" do

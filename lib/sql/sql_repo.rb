@@ -19,8 +19,9 @@ class SqlRepo
   end
 
   def read first_name, last_name
-    person_descriptor = @sql.read(first_name, last_name)
-    build_person(person_descriptor)
+    person_descriptors = @sql.read(first_name, last_name)
+    raise NotFound.new if person_descriptors.empty?
+    build_person(person_descriptors.first)
   end
 
   def update person
@@ -31,7 +32,10 @@ class SqlRepo
   end
 
   def delete person
+    return unless person_exists?(person)
+
     ripped_person = RippedPerson.new(person)
+    archive_person(ripped_person.first_name, ripped_person.last_name)
     @sql.delete_addresses(ripped_person)
     @sql.delete_person(ripped_person)
   end
@@ -50,6 +54,11 @@ class SqlRepo
 
   PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
   ADDRESSES_FIELDS = [:city, :country]
+
+  def person_exists? person
+    ripped_person = RippedPerson.new(person)
+    @sql.person_exists?(ripped_person.first_name, ripped_person.last_name)
+  end
 
   def archive_person first_name, last_name
     person = read(first_name, last_name)

@@ -61,8 +61,7 @@ class PeopleSqlite3
       WHERE p.first_name = ? AND p.last_name = ?
       """
     records = @db.execute(query, [first_name, last_name])
-    raise NotFound.new if records.empty?
-    PersonRecords.new(records).to_descriptors().first
+    PersonRecords.new(records).to_descriptors()
   end
 
   def update_person person
@@ -171,6 +170,15 @@ class PeopleSqlite3
     PersonRecords.new(records).to_descriptors()
   end
 
+  def person_exists? first_name, last_name
+    query = """
+      SELECT COUNT(*) FROM people WHERE first_name = ? AND last_name = ?
+      """
+    where = [first_name, last_name]
+    result = @db.execute(query, where)
+    result.first[0] != 0
+  end
+
   private
 
   def change_address address, id
@@ -186,8 +194,8 @@ class PeopleSqlite3
     query = """
       SELECT COUNT(*) FROM addresses WHERE person_id=?
       """
-    data = [id]
-    result = @db.execute(query, data)
+    where = [id]
+    result = @db.execute(query, where)
     result.first[0] != 0
   end
 
