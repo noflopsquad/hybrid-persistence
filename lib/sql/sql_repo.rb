@@ -19,7 +19,7 @@ class SqlRepo
   end
 
   def read first_name, last_name
-    person_descriptor = @sql.read_person(first_name, last_name)
+    person_descriptor = @sql.read(first_name, last_name)
     build_person(person_descriptor)
   end
 
@@ -37,17 +37,13 @@ class SqlRepo
   end
 
   def find_by field_values
-    person_descriptors = @sql.find_people(field_values, PEOPLE_FIELDS, ADDRESSES_FIELDS)
-    person_descriptors.map do |person_descriptor|
-      build_person(person_descriptor)
-    end
+    people_descriptors = @sql.find_people(field_values, PEOPLE_FIELDS, ADDRESSES_FIELDS)
+    build_people(people_descriptors)
   end
 
   def read_archived first_name, last_name
-    person_descriptors = @sql.read_archived(first_name, last_name)
-    person_descriptors.map do |person_descriptor|
-      build_archived_person(person_descriptor)
-    end
+    people_descriptors = @sql.read_archived(first_name, last_name)
+    build_people(people_descriptors)
   end
 
   private
@@ -69,19 +65,17 @@ class SqlRepo
     end
   end
 
-  def build_archived_person person_descriptor
-    person = Person.create_from(person_descriptor)
-    person_descriptor["addresses"].each do |address_descriptor|
-      person.add_address(Address.create_from(address_descriptor))
+  def build_people people_descriptors
+    people_descriptors.map do |person_descriptor|
+      build_person(person_descriptor)
     end
-    person
   end
 
   def build_person person_descriptor
     person = Person.create_from(person_descriptor)
-    person_id = extract_id(person_descriptor)
-    addresses = addresses_for(person_id)
-    add_addresses(person, addresses)
+    person_descriptor["addresses"].each do |address_descriptor|
+      person.add_address(Address.create_from(address_descriptor))
+    end
     person
   end
 
@@ -90,23 +84,6 @@ class SqlRepo
     person.addresses.each do |address|
       ripped_address = RippedAddress.new(address)
       @sql.update_address(ripped_address, id)
-    end
-  end
-
-  def extract_id person_descriptor
-    person_descriptor["id"]
-  end
-
-  def add_addresses person, addresses
-    addresses.each do |address|
-      person.add_address(address)
-    end
-  end
-
-  def addresses_for person_id
-    addresses = @sql.read_addresses_of(person_id)
-    addresses.map do |address_descriptor|
-      Address.create_from(address_descriptor)
     end
   end
 

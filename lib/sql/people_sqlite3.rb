@@ -43,16 +43,26 @@ class PeopleSqlite3
     query_composer = FindQueryComposer.new(people_fields, addresses_fields)
     query = query_composer.create_find_by_query(fields)
     data = fields.values
-    @db.execute(query, data)
+    records = @db.execute(query, data)
+    PersonRecords.new(records).to_descriptors()
   end
 
-  def read_person first_name, last_name
+  def read first_name, last_name
     query = """
-      SELECT * FROM people WHERE first_name = ? AND last_name = ?
+      SELECT
+        p.first_name, p.last_name,
+        p.email, p.title, p.credit_card,
+        p.phone, p.nickname,
+        a.street_address, a.street_name,
+        a.city, a.country
+      FROM people as p
+      LEFT JOIN addresses as a
+      ON p.id = a.person_id
+      WHERE p.first_name = ? AND p.last_name = ?
       """
     records = @db.execute(query, [first_name, last_name])
     raise NotFound.new if records.empty?
-    records.first
+    PersonRecords.new(records).to_descriptors().first
   end
 
   def update_person person
@@ -84,13 +94,6 @@ class PeopleSqlite3
       """
     where = [id]
     @db.execute(command, where)
-  end
-
-  def read_addresses_of person_id
-    query = """
-      SELECT * FROM addresses WHERE person_id = ?
-      """
-    @db.execute(query, [person_id])
   end
 
   def read_person_id person
@@ -195,13 +198,28 @@ class PeopleSqlite3
     end
 
     def create_find_by_query fields
-      "SELECT * FROM people LEFT JOIN addresses ON people.id = addresses.person_id " +
+      query = """
+        SELECT
+          #{PEOPLE_ALIAS}.first_name, #{PEOPLE_ALIAS}.last_name,
+          #{PEOPLE_ALIAS}.email, #{PEOPLE_ALIAS}.title,
+          #{PEOPLE_ALIAS}.credit_card, #{PEOPLE_ALIAS}.phone,
+          #{PEOPLE_ALIAS}.nickname, #{ADDRESSES_ALIAS}.street_address,
+          #{ADDRESSES_ALIAS}.street_name, #{ADDRESSES_ALIAS}.city,
+          #{ADDRESSES_ALIAS}.country
+        FROM people as #{PEOPLE_ALIAS}
+        LEFT JOIN addresses as #{ADDRESSES_ALIAS}
+        ON #{PEOPLE_ALIAS}.id = #{ADDRESSES_ALIAS}.person_id
+        """
+      query +=
         create_where_clause(fields.keys)
     end
 
     private
+    PEOPLE_ALIAS = "p"
+    ADDRESSES_ALIAS = "a"
+
     def create_where_clause field_names
-      clause = "WHERE " + compose_field_name(field_names.first) + " = ?"
+      clause = " WHERE " + compose_field_name(field_names.first) + " = ?"
       field_names.drop(1).each do |field_name|
         clause += " AND " + compose_field_name(field_name) +" = ?"
       end
@@ -209,8 +227,8 @@ class PeopleSqlite3
     end
 
     def compose_field_name field_name
-      return "people." + field_name.to_s if @people_fields.include?(field_name)
-      return "addresses." + field_name.to_s if @addresses_fields.include?(field_name)
+      return PEOPLE_ALIAS + "." + field_name.to_s if @people_fields.include?(field_name)
+      return ADDRESSES_ALIAS + "." + field_name.to_s if @addresses_fields.include?(field_name)
     end
   end
 
@@ -238,7 +256,9 @@ class PeopleSqlite3
     end
 
     def create_key record
-      record["archivation_time"].to_s + record["first_name"] + record["last_name"]
+      key = record["first_name"] + record["last_name"]
+      key += record["archivation_time"].to_s if record.keys.include?("archivation_time")
+      key
     end
 
     def extract_person_descriptor record
