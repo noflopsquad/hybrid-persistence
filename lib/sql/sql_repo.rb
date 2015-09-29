@@ -25,7 +25,7 @@ class SqlRepo
 
   def update person
     ripped_person = RippedPerson.new(person)
-    @sql.archive_person(ripped_person.first_name, ripped_person.last_name)
+    archive_person(ripped_person.first_name, ripped_person.last_name)
     @sql.update_person(ripped_person)
     update_addresses(ripped_person)
   end
@@ -54,6 +54,11 @@ class SqlRepo
 
   PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
   ADDRESSES_FIELDS = [:city, :country]
+
+  def archive_person first_name, last_name
+    archivation_time = Time.now
+    @sql.archive_person(first_name, last_name, archivation_time)
+  end
 
   def build_archived_person person_descriptor
     Person.create_from(person_descriptor)

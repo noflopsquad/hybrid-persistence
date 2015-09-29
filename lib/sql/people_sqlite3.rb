@@ -110,7 +110,7 @@ class PeopleSqlite3
     end
   end
 
-  def archive_person first_name, last_name
+  def archive_person first_name, last_name, archivation_time
     currently_persisted_version = read_person(first_name, last_name)
 
     command = """
@@ -119,7 +119,7 @@ class PeopleSqlite3
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       """
     data = [
-      Time.now.to_i,
+      archivation_time.to_i,
       currently_persisted_version["first_name"],
       currently_persisted_version["last_name"],
       currently_persisted_version["phone"],
