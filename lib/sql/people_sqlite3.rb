@@ -165,7 +165,7 @@ class PeopleSqlite3
       WHERE p.first_name = ? AND p.last_name = ?
       """
     records = @db.execute(query, [first_name, last_name])
-    RecordToDocumentConverter.extract_person_descriptors(records)
+    PersonRecords.new(records).to_descriptors()
   end
 
   private
@@ -214,48 +214,48 @@ class PeopleSqlite3
     end
   end
 
-  class RecordToDocumentConverter
-    def self.extract_person_descriptors(records)
-      documents = records.inject({}) do |descriptors, record|
+  class PersonRecords
+    def initialize(records)
+      @records = records
+    end
+
+    def to_descriptors
+      documents = @records.inject({}) do |descriptors, record|
         key = create_key(record)
 
-        if person_already_added?(descriptors, key)
+        if person_descriptor_not_added_yet?(descriptors, key)
           descriptors.merge!({key => {}})
-          add_person(record, descriptors, key)
-          add_address(record, descriptors, key)
-          descriptors
-        else
-          add_address(record, descriptors, key)
-          descriptors
+          descriptors[key] = extract_person_descriptor(record)
         end
+        add_address_descriptor(record, descriptors[key])
         descriptors
       end
       documents.values
     end
 
-    def self.person_already_added? descriptors, key
+    def person_descriptor_not_added_yet? descriptors, key
       descriptors[key].nil?
     end
 
-    def self.create_key record
+    def create_key record
       record["archivation_time"].to_s + record["first_name"] + record["last_name"]
     end
 
-    def self.add_person record, descriptors, key
-      descriptors[key] = {"first_name" => record["first_name"],
-                          "last_name" => record["last_name"],
-                          "title" => record["title"],
-                          "email" => record["email"],
-                          "credit_card" => record["credit_card"],
-                          "nickname" => record["nickname"],
-                          "phone" => record["phone"],
-                          "addresses" => []}
+    def extract_person_descriptor record
+      {"first_name" => record["first_name"],
+       "last_name" => record["last_name"],
+       "title" => record["title"],
+       "email" => record["email"],
+       "credit_card" => record["credit_card"],
+       "nickname" => record["nickname"],
+       "phone" => record["phone"],
+       "addresses" => []}
     end
 
-    def self.add_address record, descriptors, key
+    def add_address_descriptor record, descriptor
       return if record["street_address"].nil?
 
-      descriptors[key]["addresses"] << {
+      descriptor["addresses"] << {
         "street_name" => record["street_name"],
         "street_address" => record["street_address"],
         "city" => record["city"],
