@@ -6,6 +6,18 @@ CREATE TABLE IF NOT EXISTS "addresses" (
     "street_address" TEXT,
     "person_id" INTEGER
 );
+CREATE TABLE IF NOT EXISTS "archived_addresses" (
+    "street_name" TEXT,
+    "street_address" TEXT,
+    "archivation_time" INTEGER,
+    "city" TEXT,
+    "country" TEXT,
+    "first_name" TEXT,
+    "last_name" TEXT,
+    PRIMARY KEY ("street_name", "street_address", "archivation_time"),
+    FOREIGN KEY ("first_name", "last_name", "archivation_time")
+    REFERENCES archived_people("first_name", "last_name", "archivation_time")
+);
 CREATE TABLE IF NOT EXISTS "archived_people" (
     "archivation_time" INTEGER,
     "first_name" TEXT,

@@ -119,6 +119,22 @@ shared_examples_for "a repo" do
       )
     end
 
+    it "archives pre-update data of address" do
+      person.add_address(a_random_address)
+      person.add_address(address)
+      repo.insert(person)
+
+      address.changing(city: "Valencia", country: "Catalonia")
+      repo.update(person)
+
+      archived_versions = repo.read_archived(first_name, last_name)
+      archived_person = testable_person(archived_versions.first)
+      testable_address = archived_person.retrieve_address(street_name, street_address)
+      expect(testable_address).to have_attributes(
+        city: city, country: country
+      )
+    end
+
     it "inserts non existing address" do
       repo.insert(person)
       person.add_address(address)

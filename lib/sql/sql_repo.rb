@@ -57,14 +57,24 @@ class SqlRepo
 
   def archive_person first_name, last_name
     person = read(first_name, last_name)
-
+    ripped_person = RippedPerson.new(person)
     archivation_time = Time.now
-    @sql.archive_person(RippedPerson.new(person), archivation_time)
+    @sql.archive_person(ripped_person, archivation_time)
+    archive_addresses(ripped_person, archivation_time)
+  end
 
+  def archive_addresses person, archivation_time
+    person.addresses.each do |address|
+      @sql.archive_address(RippedAddress.new(address), person, archivation_time)
+    end
   end
 
   def build_archived_person person_descriptor
-    Person.create_from(person_descriptor)
+    person = Person.create_from(person_descriptor)
+    person_descriptor["addresses"].each do |address_descriptor|
+      person.add_address(Address.create_from(address_descriptor))
+    end
+    person
   end
 
   def build_person person_descriptor

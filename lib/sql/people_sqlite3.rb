@@ -129,11 +129,43 @@ class PeopleSqlite3
     @db.execute(command, data)
   end
 
+  def archive_address address, person, archivation_time
+    command = """
+      INSERT INTO archived_addresses
+      (archivation_time, street_name, street_address,
+        city, country,
+        first_name, last_name)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      """
+    data = [
+      archivation_time.to_i,
+      address.street_name,
+      address.street_address,
+      address.city,
+      address.country,
+      person.first_name,
+      person.last_name
+    ]
+    @db.execute(command, data)
+  end
+
   def read_archived first_name, last_name
     query = """
-      SELECT * FROM archived_people WHERE first_name = ? AND last_name = ?
+      SELECT
+        p.first_name, p.last_name, p.archivation_time,
+        p.email, p.title, p.credit_card,
+        p.phone, p.nickname,
+        a.street_address, a.street_name,
+        a.city, a.country
+      FROM archived_people as p
+      LEFT JOIN archived_addresses as a
+      ON p.first_name = a.first_name
+      AND p.last_name = a.last_name
+      AND p.archivation_time = a.archivation_time
+      WHERE p.first_name = ? AND p.last_name = ?
       """
-    @db.execute(query, [first_name, last_name])
+    records = @db.execute(query, [first_name, last_name])
+    RecordToDocumentConverter.extract_person_descriptors(records)
   end
 
   private
@@ -179,6 +211,56 @@ class PeopleSqlite3
     def compose_field_name field_name
       return "people." + field_name.to_s if @people_fields.include?(field_name)
       return "addresses." + field_name.to_s if @addresses_fields.include?(field_name)
+    end
+  end
+
+  class RecordToDocumentConverter
+    def self.extract_person_descriptors(records)
+      documents = records.inject({}) do |descriptors, record|
+        key = create_key(record)
+
+        if person_already_added?(descriptors, key)
+          descriptors.merge!({key => {}})
+          add_person(record, descriptors, key)
+          add_address(record, descriptors, key)
+          descriptors
+        else
+          add_address(record, descriptors, key)
+          descriptors
+        end
+        descriptors
+      end
+      documents.values
+    end
+
+    def self.person_already_added? descriptors, key
+      descriptors[key].nil?
+    end
+
+    def self.create_key record
+      record["archivation_time"].to_s + record["first_name"] + record["last_name"]
+    end
+
+    def self.add_person record, descriptors, key
+      descriptors[key] = {"first_name" => record["first_name"],
+                          "last_name" => record["last_name"],
+                          "title" => record["title"],
+                          "email" => record["email"],
+                          "credit_card" => record["credit_card"],
+                          "nickname" => record["nickname"],
+                          "phone" => record["phone"],
+                          "addresses" => []}
+    end
+
+    def self.add_address record, descriptors, key
+      return if record["street_address"].nil?
+
+      descriptors[key]["addresses"] << {
+        "street_name" => record["street_name"],
+        "street_address" => record["street_address"],
+        "city" => record["city"],
+        "country" => record["country"]
+      }
     end
   end
 end
