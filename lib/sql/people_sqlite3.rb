@@ -110,9 +110,7 @@ class PeopleSqlite3
     end
   end
 
-  def archive_person first_name, last_name, archivation_time
-    currently_persisted_version = read_person(first_name, last_name)
-
+  def archive_person person, archivation_time
     command = """
       INSERT INTO archived_people
       (archivation_time, first_name, last_name, phone, email, title, credit_card, nickname)
@@ -120,13 +118,13 @@ class PeopleSqlite3
       """
     data = [
       archivation_time.to_i,
-      currently_persisted_version["first_name"],
-      currently_persisted_version["last_name"],
-      currently_persisted_version["phone"],
-      currently_persisted_version["email"],
-      currently_persisted_version["title"],
-      currently_persisted_version["credit_card"],
-      currently_persisted_version["nickname"]
+      person.first_name,
+      person.last_name,
+      person.phone,
+      person.email,
+      person.title,
+      person.credit_card,
+      person.nickname
     ]
     @db.execute(command, data)
   end

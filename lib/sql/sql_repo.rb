@@ -56,8 +56,11 @@ class SqlRepo
   ADDRESSES_FIELDS = [:city, :country]
 
   def archive_person first_name, last_name
+    person = read(first_name, last_name)
+
     archivation_time = Time.now
-    @sql.archive_person(first_name, last_name, archivation_time)
+    @sql.archive_person(RippedPerson.new(person), archivation_time)
+
   end
 
   def build_archived_person person_descriptor
