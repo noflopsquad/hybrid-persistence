@@ -110,6 +110,34 @@ class PeopleSqlite3
     end
   end
 
+  def archive_person first_name, last_name
+    currently_persisted_version = read_person(first_name, last_name)
+
+    command = """
+      INSERT INTO archived_people
+      (archivation_time, first_name, last_name, phone, email, title, credit_card, nickname)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      """
+    data = [
+      Time.now.to_i,
+      currently_persisted_version["first_name"],
+      currently_persisted_version["last_name"],
+      currently_persisted_version["phone"],
+      currently_persisted_version["email"],
+      currently_persisted_version["title"],
+      currently_persisted_version["credit_card"],
+      currently_persisted_version["nickname"]
+    ]
+    @db.execute(command, data)
+  end
+
+  def read_archived first_name, last_name
+    query = """
+      SELECT * FROM archived_people WHERE first_name = ? AND last_name = ?
+      """
+    @db.execute(query, [first_name, last_name])
+  end
+
   private
 
   def change_address address, id

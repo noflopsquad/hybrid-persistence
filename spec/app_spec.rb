@@ -83,6 +83,25 @@ shared_examples_for "a repo" do
       )
     end
 
+    it "archives pre-update data of people" do
+      repo.insert(person)
+
+      person.changing(
+        phone: "111122223333", title: "Mrs",
+        credit_card: "50252067239763", email: "adios@hola.com",
+        nickname: "trikitrok"
+      )
+      repo.update(person)
+
+      archived_versions = repo.read_archived(first_name, last_name)
+
+      expect(archived_versions.size).to eq(1)
+      expect(testable_person(archived_versions.first)).to have_attributes(
+        email: email, phone: phone, credit_card: credit_card,
+        title: title, nickname: nickname
+      )
+    end
+
     it "changes existing address" do
       person.add_address(a_random_address)
       person.add_address(address)
