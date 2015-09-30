@@ -15,7 +15,9 @@ class AddressesRepo
 
   def read person
     addresses_identities = @identity_repo.read(person.identity)
-    addresses_descriptors = retrieve_addresses(addresses_identities, person.archivation_time)
+    addresses_descriptors = retrieve(addresses_identities) do |street_name, street_address|
+      @state_repo.read(street_name, street_address)
+    end
     build_addresses(addresses_descriptors)
   end
 
@@ -40,16 +42,23 @@ class AddressesRepo
     @state_repo.archive(address, archivation_time)
   end
 
-  def addresses_of_person person_identity, archivation_time
+  def addresses_of_person person_identity
     addresses_identities = @identity_repo.read(person_identity)
-    addresses_descriptors = retrieve_addresses(
-      addresses_identities, archivation_time
-    )
+    addresses_descriptors = retrieve(addresses_identities) do |street_name, street_address|
+      @state_repo.read(street_name, street_address)
+    end
+    build_addresses(addresses_descriptors)
+  end
+
+  def addresses_of_archived_person person_identity, archivation_time
+    addresses_identities = @identity_repo.read(person_identity)
+    addresses_descriptors = retrieve(addresses_identities) do |street_name, street_address|
+      @state_repo.read_archived(street_name, street_address, archivation_time)
+    end
     build_addresses(addresses_descriptors)
   end
 
   private
-
   def address_exists? address, person
     addresses = read(person)
     addresses.include?(address)
@@ -61,10 +70,10 @@ class AddressesRepo
     end
   end
 
-  def retrieve_addresses addresses_identities, archivation_time
-    descriptors = addresses_identities.map do |address_identity|
-      res = @state_repo.read(
-        address_identity["street_name"], address_identity["street_address"], archivation_time
+  def retrieve addresses_identities, &block
+    addresses_identities.map do |address_identity|
+      block.yield(
+        address_identity["street_name"], address_identity["street_address"]
       )
     end.compact
   end

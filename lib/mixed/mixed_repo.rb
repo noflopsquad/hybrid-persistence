@@ -23,7 +23,8 @@ class MixedRepo
   def read first_name, last_name
     person = retrieve_person(first_name, last_name)
     accessible = AccessiblePerson.new(person)
-    add_addresses_to_person(accessible, accessible.archivation_time)
+    addresses = @addresses.addresses_of_person(accessible.identity)
+    add_addresses(person, addresses)
     person
   end
 
@@ -43,7 +44,8 @@ class MixedRepo
     found_people = retrieve_people_by(fields)
     found_people.each do |person|
       accessible = AccessiblePerson.new(person)
-      add_addresses_to_person(accessible, accessible.archivation_time)
+      addresses = @addresses.addresses_of_person(accessible.identity)
+      add_addresses(person, addresses)
     end
     found_people
   end
@@ -52,7 +54,10 @@ class MixedRepo
     archived_people_descriptors = @people.read_archived(first_name, last_name)
     archived_people = archived_people_descriptors.map do |person_descriptor|
       person = Person.create_from(person_descriptor)
-      add_addresses_to_person(person, person_descriptor[:archivation_time])
+      addresses = @addresses.addresses_of_archived_person(
+        person.identity, person_descriptor[:archivation_time]
+      )
+      add_addresses(person, addresses)
       person
     end
     archived_people
@@ -122,11 +127,6 @@ class MixedRepo
       accessible = AccessibleAddress.new(address)
       @addresses.delete(address, delete_time)
     end
-  end
-
-  def add_addresses_to_person person, archivation_time
-    addresses = @addresses.addresses_of_person(person.identity, archivation_time)
-    add_addresses(person, addresses)
   end
 
   def add_addresses person, addresses

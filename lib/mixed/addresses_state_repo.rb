@@ -24,27 +24,24 @@ class AddressesStateRepo
     retrieve_by(addresses_fields)
   end
 
-  def read street_name, street_address, archivation_time
-    query_selector = compose_query_selector(street_name, street_address, archivation_time)
-    collection.find(query_selector).first
+  def read street_name, street_address
+    collection.find(street_name: street_name,
+                    street_address: street_address,
+                    current: true).first
+  end
+
+  def read_archived street_name, street_address, archivation_time
+    collection.find(street_name: street_name,
+                    street_address: street_address,
+                    current: false,
+                    archivation_time: archivation_time).first
   end
 
   private
   ADDRESSES_FIELDS = [:city, :country]
 
-  def compose_query_selector street_name, street_address, archivation_time
-    selector = {street_name: street_name,
-                street_address: street_address,
-                current: true}
-    selector.merge!(
-      current: false, archivation_time: archivation_time
-    ) unless archivation_time.nil?
-
-    selector
-  end
-
   def archive address, archivation_time
-    persisted_state = read(address.street_name, address.street_address, nil)
+    persisted_state = read(address.street_name, address.street_address)
     collection.find_one_and_update(
       { street_name: address.street_name,
         street_address: address.street_address,
