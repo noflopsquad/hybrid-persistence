@@ -25,18 +25,23 @@ class AddressesStateRepo
   end
 
   def read street_name, street_address, archivation_time
-    return collection.find(street_name: street_name,
-                           street_address: street_address,
-                           current: true).first if archivation_time.nil?
-
-    collection.find(street_name: street_name,
-                    street_address: street_address,
-                    current: false,
-                    archivation_time: archivation_time).first
+    query_selector = compose_query_selector(street_name, street_address, archivation_time)
+    collection.find(query_selector).first
   end
 
   private
   ADDRESSES_FIELDS = [:city, :country]
+
+  def compose_query_selector street_name, street_address, archivation_time
+    selector = {street_name: street_name,
+                street_address: street_address,
+                current: true}
+    selector.merge!(
+      current: false, archivation_time: archivation_time
+    ) unless archivation_time.nil?
+
+    selector
+  end
 
   def archive address, archivation_time
     persisted_state = read(address.street_name, address.street_address, nil)
