@@ -40,15 +40,6 @@ class AddressesRepo
     @state_repo.archive(address, archivation_time)
   end
 
-  def add_addresses_to_people people_descriptors
-    people_descriptors.each do |person_descriptor|
-      person_identity = PersonIdentity.new(
-        person_descriptor[:first_name], person_descriptor[:last_name]
-      ).hash
-      addresses_of_person(person_identity, person_descriptor[:archivation_time])
-    end
-  end
-
   def addresses_of_person person_identity, archivation_time
     addresses_identities = @identity_repo.read(person_identity)
     addresses_descriptors = retrieve_addresses(
