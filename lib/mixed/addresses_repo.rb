@@ -1,4 +1,4 @@
-require './lib/mixed/address_identity'
+require './lib/address_identity'
 require './lib/mixed/addresses_identity_repo'
 require './lib/mixed/addresses_state_repo'
 

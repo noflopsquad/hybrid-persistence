@@ -2,7 +2,7 @@ require 'forwardable'
 require './lib/mixed/people_repo'
 require './lib/mixed/addresses_repo'
 require './lib/mixed/people_addresses_relationship'
-require './lib/mixed/address_identity'
+require './lib/address_identity'
 require 'set'
 
 class MixedRepo
