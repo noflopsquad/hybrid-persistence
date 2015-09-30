@@ -24,17 +24,22 @@ class AddressesStateRepo
     retrieve_by(addresses_fields)
   end
 
-  def read street_name, street_address
+  def read street_name, street_address, archivation_time
+    return collection.find(street_name: street_name,
+                           street_address: street_address,
+                           current: true).first if archivation_time.nil?
+
     collection.find(street_name: street_name,
                     street_address: street_address,
-                    current: true).first
+                    current: false,
+                    archivation_time: archivation_time).first
   end
 
   private
   ADDRESSES_FIELDS = [:city, :country]
 
   def archive address, archivation_time
-    persisted_state = read(address.street_name, address.street_address)
+    persisted_state = read(address.street_name, address.street_address, nil)
     collection.find_one_and_update(
       { street_name: address.street_name,
         street_address: address.street_address,

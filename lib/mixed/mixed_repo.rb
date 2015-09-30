@@ -45,12 +45,14 @@ class MixedRepo
   end
 
   def read_archived first_name, last_name
-    archived_people = @people.read_archived(first_name, last_name)
-    archived_people.map do |person_descriptor|
-      Person.create_from(person_descriptor)
+    archived_people_descriptors = @people.read_archived(first_name, last_name)
+    archived_people = archived_people_descriptors.map do |person_descriptor|
+      person = Person.create_from(person_descriptor)
+      addresses = @addresses.addresses_of_person(person_descriptor)
+      add_addresses(person, addresses)
+      person
     end
-    # add_addresses_to_people([person])
-    # person
+    archived_people
   end
 
   private
@@ -159,6 +161,10 @@ class MixedRepo
     def addresses
       return [] if variable_states[:addresses].nil?
       variable_states[:addresses]
+    end
+
+    def archivation_time
+      variable_states[:archivation_time]
     end
   end
 

@@ -14,8 +14,9 @@ class AddressesRepo
   end
 
   def read person
-    addresses_identities = @identity_repo.read(person)
-    retrieve_addresses(addresses_identities)
+    addresses_identities = @identity_repo.read(person.identity)
+    addresses_descriptors = retrieve_addresses(addresses_identities, nil)
+    build_addresses(addresses_descriptors)
   end
 
   def update address, person, update_time
@@ -40,6 +41,23 @@ class AddressesRepo
     @state_repo.archive(address, archivation_time)
   end
 
+  def add_addresses_to_people people_descriptors
+    people_descriptors.each do |person_descriptor|
+      addresses_of_person(person_descriptor)
+    end
+  end
+
+  def addresses_of_person person_descriptor
+    person_identity = PersonIdentity.new(
+      person_descriptor[:first_name], person_descriptor[:last_name]
+    )
+    addresses_identities = @identity_repo.read(person_identity.hash)
+    addresses_descriptors = retrieve_addresses(
+      addresses_identities, person_descriptor[:archivation_time]
+    )
+    build_addresses(addresses_descriptors)
+  end
+
   private
 
   def address_exists? address, person
@@ -53,10 +71,11 @@ class AddressesRepo
     end
   end
 
-  def retrieve_addresses addresses_identities
+  def retrieve_addresses addresses_identities, archivation_time
     descriptors = addresses_identities.map do |address_identity|
-      @state_repo.read(address_identity["street_name"], address_identity["street_address"])
-    end
-    build_addresses(descriptors)
+      res = @state_repo.read(
+        address_identity["street_name"], address_identity["street_address"], archivation_time
+      )
+    end.compact
   end
 end
