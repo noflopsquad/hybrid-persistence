@@ -3,14 +3,6 @@ class PeopleIdentityRepo
     @sql = sql
   end
 
-  def remove person
-    command = """
-      DELETE FROM mixed_people WHERE first_name = ? AND last_name = ?
-      """
-    data = [person.first_name, person.last_name]
-    @sql.execute(command, data)
-  end
-
   def exists? first_name, last_name
     query = """
       SELECT COUNT(*) FROM mixed_people WHERE first_name = ? AND last_name = ?

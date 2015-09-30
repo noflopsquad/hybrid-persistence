@@ -23,7 +23,6 @@ class PeopleRepo
 
   def delete person, time
     @state_repo.remove(person, time)
-    @identity_repo.remove(person) # ???
   end
 
   def find_by fields
