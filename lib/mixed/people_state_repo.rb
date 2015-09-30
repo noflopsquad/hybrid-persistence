@@ -47,7 +47,7 @@ class PeopleStateRepo
         last_name: person.last_name,
         current: true
         },
-      persisted_state.merge(current: false, archivation_time: archivation_time.to_i)
+      persisted_state.merge(current: false, archivation_time: archivation_time)
     )
   end
 

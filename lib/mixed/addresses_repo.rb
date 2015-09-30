@@ -15,7 +15,7 @@ class AddressesRepo
 
   def read person
     addresses_identities = @identity_repo.read(person.identity)
-    addresses_descriptors = retrieve_addresses(addresses_identities, nil)
+    addresses_descriptors = retrieve_addresses(addresses_identities, person.archivation_time)
     build_addresses(addresses_descriptors)
   end
 

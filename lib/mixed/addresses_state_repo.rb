@@ -45,7 +45,7 @@ class AddressesStateRepo
         street_address: address.street_address,
         current: true
         },
-      persisted_state.merge(current: false, archivation_time: archivation_time.to_i)
+      persisted_state.merge(current: false, archivation_time: archivation_time)
     )
   end
 
