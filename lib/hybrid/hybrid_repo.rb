@@ -1,8 +1,7 @@
-require 'forwardable'
 require './lib/hybrid/people_repo'
 require './lib/hybrid/addresses_repo'
 require './lib/hybrid/people_addresses_relationship'
-require './lib/address_identity'
+require 'forwardable'
 require 'set'
 
 class HybridRepo
@@ -23,7 +22,7 @@ class HybridRepo
   def read first_name, last_name
     person = retrieve_person(first_name, last_name)
     accessible = AccessiblePerson.new(person)
-    addresses = @addresses.addresses_of_person(accessible.identity)
+    addresses = @addresses.addresses_of_person(accessible.id)
     add_addresses(person, addresses)
     person
   end
@@ -44,7 +43,7 @@ class HybridRepo
     found_people = retrieve_people_by(fields)
     found_people.each do |person|
       accessible = AccessiblePerson.new(person)
-      addresses = @addresses.addresses_of_person(accessible.identity)
+      addresses = @addresses.addresses_of_person(accessible.id)
       add_addresses(person, addresses)
     end
     found_people
@@ -55,7 +54,7 @@ class HybridRepo
     archived_people = archived_people_descriptors.map do |person_descriptor|
       person = Person.create_from(person_descriptor)
       addresses = @addresses.addresses_of_archived_person(
-        person.identity, person_descriptor[:archivation_time]
+        person.id, person_descriptor[:archivation_time]
       )
       add_addresses(person, addresses)
       person
@@ -122,8 +121,10 @@ class HybridRepo
 
   def retrieve_person_associated_to address
     accessible = AccessibleAddress.new(address)
-    person_identity = @people_addresses_repo.retrieve_person_associated_to(accessible)
-    @people.read(person_identity.first_name, person_identity.last_name)
+    descriptor = @people_addresses_repo.retrieve_person_associated_to(accessible)
+    @people.read(
+      descriptor["first_name"], descriptor["last_name"]
+    )
   end
 
   def delete_addresses person, delete_time
@@ -156,7 +157,7 @@ class HybridRepo
   class AccessiblePerson < Person
     extend Forwardable
 
-    def_delegators :@person, :first_name, :last_name, :variable_states, :add_address
+    def_delegators :@person, :first_name, :last_name, :variable_states, :add_address, :identity
 
     def initialize(person)
       @person = person
@@ -175,14 +176,10 @@ class HybridRepo
   class AccessibleAddress < Address
     extend Forwardable
 
-    def_delegators :@address, :street_name, :street_address, :variable_states
+    def_delegators :@address, :street_name, :street_address, :variable_states, :identity
 
     def initialize address
       @address = address
-    end
-
-    def identity
-      AddressIdentity.new(street_name, street_address).hash
     end
   end
 end

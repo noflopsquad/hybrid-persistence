@@ -1,5 +1,3 @@
-require './lib/person_identity'
-
 class PeopleAddressesRelationship
   def initialize(sql)
     @sql = sql
@@ -12,7 +10,6 @@ class PeopleAddressesRelationship
       where a.street_name = ? AND a.street_address = ?
       """
     where = [address.street_name, address.street_address]
-    result = @sql.execute(query, where).first
-    PersonIdentity.new(result["first_name"], result["last_name"])
+    @sql.execute(query, where).first
   end
 end

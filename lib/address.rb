@@ -1,17 +1,25 @@
+require 'address_identity'
+require 'forwardable'
+
 class Address
+  extend Forwardable
+
   def initialize street_name, street_address
-    @street_name = street_name
-    @street_address = street_address
+    @identity = AddressIdentity.new(street_name, street_address)
     @variable_states = {}
   end
 
   def == other
-    same_street_name = street_name == other.street_name
-    same_street_address = street_address == other.street_address
-    same_street_name && same_street_address
+    identity.eql?(other.identity)
   end
 
   alias_method :eql?, :==
+
+  def hash
+    identity.hash
+  end
+
+  alias_method :id, :hash
 
   def self.create_from(descriptor)
     address = Address.new(descriptor["street_name"], descriptor["street_address"])
@@ -22,7 +30,8 @@ class Address
   end
 
   protected
-  attr_reader :street_name, :street_address, :variable_states
+  attr_reader :variable_states, :identity
+  def_delegators :@identity, :street_name, :street_address
 
   def self.variable_state_fields
     [:city, :country]

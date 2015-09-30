@@ -18,7 +18,7 @@ class AddressesIdentityRepo
     data = [
       address.street_name,
       address.street_address,
-      person.identity
+      person.id
     ]
     @sql.execute(command, data)
   end

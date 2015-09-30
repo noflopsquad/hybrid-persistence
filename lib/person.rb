@@ -1,10 +1,11 @@
 require 'person_identity'
+require 'forwardable'
 
 class Person
+  extend Forwardable
 
   def initialize(first_name, last_name)
-    @first_name = first_name
-    @last_name = last_name
+    @identity = PersonIdentity.new(first_name, last_name)
     @variable_states = {}
   end
 
@@ -14,20 +15,16 @@ class Person
   end
 
   def == other
-    same_first = first_name.eql?(other.first_name)
-    same_last = last_name.eql?(other.last_name)
-    same_first && same_last
+    identity.eql?(other.identity)
   end
 
   alias_method :eql?, :==
 
-  def identity
-    PersonIdentity.new(first_name, last_name).hash
+  def hash
+    identity.hash
   end
 
-  def hash
-    identity
-  end
+  alias_method :id, :hash
 
   def self.create_from(descriptor)
     person = Person.new(descriptor["first_name"], descriptor["last_name"])
@@ -38,7 +35,8 @@ class Person
   end
 
   protected
-  attr_reader :first_name, :last_name, :variable_states
+  attr_reader :variable_states, :identity
+  def_delegators :@identity, :first_name, :last_name
 
   def self.variable_state_fields
     [:email, :phone, :credit_card, :title, :nickname]

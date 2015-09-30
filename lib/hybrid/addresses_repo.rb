@@ -1,4 +1,3 @@
-require './lib/address_identity'
 require './lib/hybrid/addresses_identity_repo'
 require './lib/hybrid/addresses_state_repo'
 
@@ -14,7 +13,7 @@ class AddressesRepo
   end
 
   def read person
-    addresses_identities = @identity_repo.read(person.identity)
+    addresses_identities = @identity_repo.read(person.id)
     addresses_descriptors = retrieve(addresses_identities) do |street_name, street_address|
       @state_repo.read(street_name, street_address)
     end

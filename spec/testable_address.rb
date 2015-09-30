@@ -1,7 +1,7 @@
 class TestableAddress < Address
   extend Forwardable
 
-  def_delegators :@address, :street_name, :street_address, :variable_states
+  def_delegators :@address, :street_name, :street_address, :variable_states, :identity
 
   def initialize(address)
     @address = address

@@ -15,7 +15,7 @@ class PeopleIdentityRepo
     command = """
       INSERT INTO hybrid_people (id, first_name, last_name) VALUES (?, ?, ?)
       """
-    data = [person.identity, person.first_name, person.last_name]
+    data = [person.id, person.first_name, person.last_name]
     @sql.execute(command, data)
   end
 end

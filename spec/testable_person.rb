@@ -1,7 +1,7 @@
 class TestablePerson < Person
   extend Forwardable
 
-  def_delegators :@person, :first_name, :last_name, :add_address, :variable_states
+  def_delegators :@person, :first_name, :last_name, :add_address, :variable_states, :identity
 
   def initialize(person)
     @person = person
