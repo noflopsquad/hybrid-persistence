@@ -3,24 +3,26 @@ class PeopleMongo
     @mongo = Connections.mongo
   end
 
-  def insert person
-    @mongo[:people].insert_one(person.to_h)
+  def insert person_descriptor
+    @mongo[:people].insert_one(person_descriptor)
   end
 
-  def update person
-    person_hash = person.to_h
+  def read first_name, last_name
+    @mongo[:people].find(first_name: first_name, last_name: last_name).first
+  end
+
+  def update person_descriptor
     @mongo[:people].find_one_and_update(
-      { first_name: person_hash[:first_name],
-        last_name: person_hash[:last_name]
-        }, person_hash)
+      { first_name: person_descriptor[:first_name],
+        last_name: person_descriptor[:last_name]
+        }, person_descriptor)
   end
 
-  def delete person
-    person_hash = person.to_h
+  def delete person_descriptor
     @mongo[:people].find_one_and_delete(
       {
-        first_name: person_hash[:first_name],
-        last_name: person_hash[:last_name]
+        first_name: person_descriptor[:first_name],
+        last_name: person_descriptor[:last_name]
       }
     )
   end
@@ -30,8 +32,18 @@ class PeopleMongo
     @mongo[:people].find(query_hash)
   end
 
-  def read first_name, last_name
-    @mongo[:people].find(first_name: first_name, last_name: last_name).first
+  def archive person_descriptor
+    person_descriptor.merge!(archivation_time: Time.now.to_i)
+    @mongo[:archived_people].insert_one(person_descriptor)
+  end
+
+  def read_archived first_name, last_name
+    @mongo[:archived_people].find(first_name: first_name, last_name: last_name)
+  end
+
+  def person_exists? first_name, last_name
+    person_descriptor = read(first_name, last_name)
+    not person_descriptor.nil?
   end
 
   private

@@ -10,6 +10,7 @@ namespace :db do
   task :drop do
     execute_sql_script('./db/drop.sql')
     Connections.mongo[:people].drop
+    Connections.mongo[:archived_people].drop
     Connections.mongo[:address_states].drop
     Connections.mongo[:person_states].drop
   end

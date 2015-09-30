@@ -3,6 +3,7 @@ require './lib/person'
 require './lib/address'
 require './lib/not_found'
 require './lib/no_sql/people_mongo'
+require 'forwardable'
 
 class NoSqlRepo
   def initialize
@@ -11,7 +12,7 @@ class NoSqlRepo
 
   def insert person
     serializable = SerializablePerson.new(person)
-    @no_sql.insert(serializable)
+    @no_sql.insert(serializable.to_h)
   end
 
   def read first_name, last_name
@@ -21,12 +22,14 @@ class NoSqlRepo
 
   def update person
     serializable = SerializablePerson.new(person)
-    @no_sql.update(serializable)
+    archive(serializable)
+    @no_sql.update(serializable.to_h)
   end
 
   def delete person
     serializable = SerializablePerson.new(person)
-    @no_sql.delete(serializable)
+    archive(serializable)
+    @no_sql.delete(serializable.to_h)
   end
 
   def find_by fields
@@ -36,10 +39,23 @@ class NoSqlRepo
     end
   end
 
+  def read_archived first_name, last_name
+    person_descriptors = @no_sql.read_archived(first_name, last_name)
+    person_descriptors.map do |person_descriptor|
+      build_person(person_descriptor)
+    end
+  end
+
   private
 
   PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
   ADDRESSES_FIELDS = [:city, :country]
+
+  def archive person
+    return unless @no_sql.person_exists?(person.first_name, person.last_name)
+    person_descriptor = retrieve_person(person.first_name, person.last_name)
+    @no_sql.archive(person_descriptor)
+  end
 
   def build_person person_descriptor
     person = Person.create_from(person_descriptor)
@@ -67,6 +83,10 @@ class NoSqlRepo
   end
 
   class SerializablePerson < Person
+    extend Forwardable
+
+    def_delegators :@person, :first_name, :last_name
+
     def initialize(person)
       @person = person
     end
