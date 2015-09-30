@@ -1,5 +1,5 @@
-require './lib/mixed/people_identity_repo'
-require './lib/mixed/people_state_repo'
+require './lib/hybrid/people_identity_repo'
+require './lib/hybrid/people_state_repo'
 
 class PeopleRepo
   def initialize(sql, mongo)

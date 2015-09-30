@@ -276,7 +276,7 @@ describe SqlRepo do
   it_behaves_like "a repo"
 end
 
-describe MixedRepo do
+describe HybridRepo do
   it_behaves_like "a repo"
 end
 

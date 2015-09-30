@@ -1,6 +1,6 @@
 require './lib/address_identity'
-require './lib/mixed/addresses_identity_repo'
-require './lib/mixed/addresses_state_repo'
+require './lib/hybrid/addresses_identity_repo'
+require './lib/hybrid/addresses_state_repo'
 
 class AddressesRepo
   def initialize sql, mongo

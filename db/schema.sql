@@ -39,15 +39,15 @@ CREATE TABLE IF NOT EXISTS "people" (
     "title" TEXT,
     "nickname" TEXT
 );
-CREATE TABLE IF NOT EXISTS "mixed_people" (
+CREATE TABLE IF NOT EXISTS "hybrid_people" (
     "id" INTEGER PRIMARY KEY,
     "first_name" TEXT,
     "last_name" TEXT
 );
-CREATE TABLE IF NOT EXISTS "mixed_addresses" (
+CREATE TABLE IF NOT EXISTS "hybrid_addresses" (
     "street_name" TEXT,
     "street_address" TEXT,
     "person_id" INTEGER,
     PRIMARY KEY ("street_name", "street_address"),
-    FOREIGN KEY ("person_id") REFERENCES mixed_people("id")
+    FOREIGN KEY ("person_id") REFERENCES hybrid_people("id")
 );

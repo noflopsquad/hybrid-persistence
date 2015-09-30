@@ -1,7 +1,7 @@
 require 'sinatra/base'
 require 'json'
 require './lib/no_sql/no_sql_repo'
-require './lib/mixed/mixed_repo'
+require './lib/hybrid/hybrid_repo'
 require './lib/sql/sql_repo'
 require './lib/person_factory'
 require './lib/not_found'
@@ -39,11 +39,11 @@ class App < Sinatra::Base
 
     puts Benchmark.measure { insert_sql(persons)  }
     puts Benchmark.measure { insert_mongo(persons)  }
-    puts Benchmark.measure { insert_mixed(persons)  }
+    puts Benchmark.measure { insert_hybrid(persons)  }
   end
 
   def people
-    @people ||= mixed_repo
+    @people ||= hybrid_repo
   end
 
   def insert_sql persons
@@ -58,9 +58,9 @@ class App < Sinatra::Base
     end
   end
 
-  def insert_mixed persons
+  def insert_hybrid persons
     persons.each do |person|
-      mixed_repo.insert(person)
+      hybrid_repo.insert(person)
     end
   end
 
@@ -72,7 +72,7 @@ class App < Sinatra::Base
     @no_sql_repo ||= NoSqlRepo.new
   end
 
-  def mixed_repo
-    @mixed_repo ||= MixedRepo.new
+  def hybrid_repo
+    @hybrid_repo ||= HybridRepo.new
   end
 end

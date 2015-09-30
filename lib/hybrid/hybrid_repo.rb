@@ -1,11 +1,11 @@
 require 'forwardable'
-require './lib/mixed/people_repo'
-require './lib/mixed/addresses_repo'
-require './lib/mixed/people_addresses_relationship'
+require './lib/hybrid/people_repo'
+require './lib/hybrid/addresses_repo'
+require './lib/hybrid/people_addresses_relationship'
 require './lib/address_identity'
 require 'set'
 
-class MixedRepo
+class HybridRepo
   def initialize
     @sql = Connections.sql
     @mongo = Connections.mongo
