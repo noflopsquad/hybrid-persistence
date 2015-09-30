@@ -1,5 +1,4 @@
 require 'value_object'
-require 'digest/sha1'
 
 class AddressIdentity
   extend ValueObject
