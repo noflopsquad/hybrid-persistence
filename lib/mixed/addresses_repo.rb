@@ -18,22 +18,26 @@ class AddressesRepo
     retrieve_addresses(addresses_identities)
   end
 
-  def update address, person_identity
+  def update address, person_identity, update_time
     if address_exists?(address, person_identity)
-      @state_repo.update(address)
+      @state_repo.update(address, update_time)
     else
       insert(address, person_identity)
     end
   end
 
-  def delete address
-    @state_repo.remove(address)
+  def delete address, delete_time
+    @state_repo.remove(address, delete_time)
     @identity_repo.remove(address)
   end
 
   def find_by fields
     descriptors = @state_repo.find_by(fields)
     build_addresses(descriptors)
+  end
+
+  def archive address, archivation_time
+    @state_repo.archive(address, archivation_time)
   end
 
   private

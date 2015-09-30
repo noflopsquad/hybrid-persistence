@@ -21,21 +21,21 @@ class MixedRepo
   end
 
   def read first_name, last_name
-    person = @people.read(first_name, last_name)
+    person = retrieve_person(first_name, last_name)
     add_addresses_to_people([person])
     person
   end
 
   def update person
     accessible = AccessiblePerson.new(person)
-    @people.update(accessible)
-    update_adresses(accessible)
+    update_time = Time.now
+    @people.update(accessible, update_time)
+    update_adresses(accessible, update_time)
   end
 
   def delete person
-    accessible = AccessiblePerson.new(person)
-    @people.delete(accessible)
-    delete_addresses(accessible)
+    return unless exists?(person)
+    remove(person)
   end
 
   def find_by fields
@@ -44,7 +44,39 @@ class MixedRepo
     found_people
   end
 
+  def read_archived first_name, last_name
+    archived_people = @people.read_archived(first_name, last_name)
+    archived_people.map do |person_descriptor|
+      Person.create_from(person_descriptor)
+    end
+    # add_addresses_to_people([person])
+    # person
+  end
+
   private
+  def remove person
+    accessible = AccessiblePerson.new(person)
+    delete_time = Time.now
+    @people.delete(accessible, delete_time)
+    delete_addresses(accessible, delete_time)
+  end
+
+  def retrieve_person first_name, last_name
+    person = @people.read(first_name, last_name)
+    raise NotFound.new if person.nil?
+    person
+  end
+
+  def exists? person
+    accessible = AccessiblePerson.new(person)
+    persisted = @people.read(accessible.first_name, accessible.last_name)
+    not persisted.nil?
+  end
+
+  def check_existence! first_name, last_name
+    raise NotFound.new unless exists?(first_name, last_name)
+  end
+
   def retrieve_people_by fields
     found_in_people = retrieve_people(fields)
     found_in_addresses = retrieve_addresses_by(fields)
@@ -80,10 +112,10 @@ class MixedRepo
     @people.read(person_identity.first_name, person_identity.last_name)
   end
 
-  def delete_addresses person
+  def delete_addresses person, delete_time
     person.addresses.each do |address|
       accessible = AccessibleAddress.new(address)
-      @addresses.delete(address)
+      @addresses.delete(address, delete_time)
     end
   end
 
@@ -101,10 +133,10 @@ class MixedRepo
     end
   end
 
-  def update_adresses person
+  def update_adresses person, update_time
     person.addresses.each do |address|
       accessible = AccessibleAddress.new(address)
-      @addresses.update(accessible, person.identity)
+      @addresses.update(accessible, person.identity, update_time)
     end
   end
 

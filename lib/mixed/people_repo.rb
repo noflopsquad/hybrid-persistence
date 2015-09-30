@@ -13,18 +13,17 @@ class PeopleRepo
   end
 
   def read first_name, last_name
-    check_existence!(first_name, last_name)
     descriptor = @state_repo.read(first_name, last_name)
-    to_person(descriptor)
+    to_person(descriptor) unless descriptor.nil?
   end
 
-  def update person
-    @state_repo.update(person)
+  def update person, time
+    @state_repo.update(person, time)
   end
 
-  def delete person
-    @state_repo.remove(person)
-    @identity_repo.remove(person)
+  def delete person, time
+    @state_repo.remove(person, time)
+    @identity_repo.remove(person) # ???
   end
 
   def find_by fields
@@ -32,12 +31,11 @@ class PeopleRepo
     to_people(descriptors)
   end
 
-  private
-
-  def check_existence! first_name, last_name
-    raise NotFound.new unless @identity_repo.exists?(first_name, last_name)
+  def read_archived first_name, last_name
+    @state_repo.read_archived(first_name, last_name)
   end
 
+  private
   def to_person descriptor
     Person.create_from(descriptor)
   end

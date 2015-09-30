@@ -3,27 +3,19 @@ class AddressesStateRepo
     @mongo = mongo
   end
 
-  def update address
-    state = address.variable_states.merge(
-      street_name: address.street_name,
-      street_address: address.street_address
-    )
-    collection.find_one_and_update(
-      {street_name: address.street_name,
-       street_address: address.street_address},
-      state
-    )
+  def update address, time
+    archive(address, time)
+    persist(address)
   end
 
-  def remove address
-    address_identity = AddressIdentity.new(address.street_name, address.street_address).hash
-    collection.find_one_and_delete(street_name: address.street_name,
-                                   street_address: address.street_address)
+  def remove address, time
+    archive(address, time)
   end
 
   def persist address
     state = address.variable_states.merge(street_name: address.street_name,
-                                          street_address: address.street_address)
+                                          street_address: address.street_address,
+                                          current: true)
     collection.insert_one(state)
   end
 
@@ -34,11 +26,23 @@ class AddressesStateRepo
 
   def read street_name, street_address
     collection.find(street_name: street_name,
-                    street_address: street_address).first
+                    street_address: street_address,
+                    current: true).first
   end
 
   private
   ADDRESSES_FIELDS = [:city, :country]
+
+  def archive address, archivation_time
+    persisted_state = read(address.street_name, address.street_address)
+    collection.find_one_and_update(
+      { street_name: address.street_name,
+        street_address: address.street_address,
+        current: true
+        },
+      persisted_state.merge(current: false, archivation_time: archivation_time.to_i)
+    )
+  end
 
   def collection
     @mongo[:address_states]

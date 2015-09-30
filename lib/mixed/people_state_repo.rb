@@ -3,32 +3,26 @@ class PeopleStateRepo
     @mongo = mongo
   end
 
-  def update person
-    state = extract_person(person)
-    collection.find_one_and_update(
-      {first_name: person.first_name,
-       last_name: person.last_name},
-      state
-    )
+  def update person, time
+    archive(person, time)
+    persist(person)
   end
 
-  def remove person
-    collection.find_one_and_delete(
-      {first_name: person.first_name,
-       last_name: person.last_name}
-    )
+  def remove person, time
+    archive(person, time)
   end
 
   def read first_name, last_name
-    state = collection.find(
+    collection.find(
       first_name: first_name,
-      last_name: last_name
+      last_name: last_name,
+      current: true
     ).first
   end
 
   def persist person
     state = extract_person(person)
-    collection.insert_one(state)
+    collection.insert_one(state.merge(current: true))
   end
 
   def find_by fields
@@ -36,7 +30,27 @@ class PeopleStateRepo
     retrieve_by(people_fields)
   end
 
+  def read_archived first_name, last_name
+    collection.find(
+      first_name: first_name,
+      last_name: last_name,
+      current: false
+    )
+  end
+
   private
+
+  def archive person, archivation_time
+    persisted_state = read(person.first_name, person.last_name)
+    collection.find_one_and_update(
+      { first_name: person.first_name,
+        last_name: person.last_name,
+        current: true
+        },
+      persisted_state.merge(current: false, archivation_time: archivation_time.to_i)
+    )
+  end
+
   def retrieve_by people_fields
     return [] if people_fields.empty?
     collection.find(people_fields)
