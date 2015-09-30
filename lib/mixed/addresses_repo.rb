@@ -43,17 +43,17 @@ class AddressesRepo
 
   def add_addresses_to_people people_descriptors
     people_descriptors.each do |person_descriptor|
-      addresses_of_person(person_descriptor)
+      person_identity = PersonIdentity.new(
+        person_descriptor[:first_name], person_descriptor[:last_name]
+      ).hash
+      addresses_of_person(person_identity, person_descriptor[:archivation_time])
     end
   end
 
-  def addresses_of_person person_descriptor
-    person_identity = PersonIdentity.new(
-      person_descriptor[:first_name], person_descriptor[:last_name]
-    )
-    addresses_identities = @identity_repo.read(person_identity.hash)
+  def addresses_of_person person_identity, archivation_time
+    addresses_identities = @identity_repo.read(person_identity)
     addresses_descriptors = retrieve_addresses(
-      addresses_identities, person_descriptor[:archivation_time]
+      addresses_identities, archivation_time
     )
     build_addresses(addresses_descriptors)
   end
