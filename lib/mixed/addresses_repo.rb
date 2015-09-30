@@ -8,21 +8,21 @@ class AddressesRepo
     @state_repo = AddressesStateRepo.new(mongo)
   end
 
-  def insert address, person_identity
-    @identity_repo.persist(address, person_identity)
+  def insert address, person
+    @identity_repo.persist(address, person)
     @state_repo.persist(address)
   end
 
-  def read person_identity
-    addresses_identities = @identity_repo.read(person_identity)
+  def read person
+    addresses_identities = @identity_repo.read(person)
     retrieve_addresses(addresses_identities)
   end
 
-  def update address, person_identity, update_time
-    if address_exists?(address, person_identity)
+  def update address, person, update_time
+    if address_exists?(address, person)
       @state_repo.update(address, update_time)
     else
-      insert(address, person_identity)
+      insert(address, person)
     end
   end
 
@@ -42,8 +42,8 @@ class AddressesRepo
 
   private
 
-  def address_exists? address, person_identity
-    addresses = read(person_identity)
+  def address_exists? address, person
+    addresses = read(person)
     addresses.include?(address)
   end
 

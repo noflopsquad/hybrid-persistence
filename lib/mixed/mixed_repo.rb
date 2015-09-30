@@ -122,7 +122,7 @@ class MixedRepo
   def add_addresses_to_people people
     people.each do |person|
       accessible = AccessiblePerson.new(person)
-      addresses = @addresses.read(accessible.identity)
+      addresses = @addresses.read(accessible)
       add_addresses(accessible, addresses)
     end
   end
@@ -136,14 +136,14 @@ class MixedRepo
   def update_adresses person, update_time
     person.addresses.each do |address|
       accessible = AccessibleAddress.new(address)
-      @addresses.update(accessible, person.identity, update_time)
+      @addresses.update(accessible, person, update_time)
     end
   end
 
   def insert_addresses person
     person.addresses.each do |address|
       accessible = AccessibleAddress.new(address)
-      @addresses.insert(accessible, person.identity)
+      @addresses.insert(accessible, person)
     end
   end
 

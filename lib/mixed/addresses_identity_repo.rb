@@ -11,14 +11,14 @@ class AddressesIdentityRepo
     @sql.execute(command, data)
   end
 
-  def read person_identity
+  def read person
     query = """
       SELECT street_name, street_address FROM mixed_addresses WHERE person_id=?
       """
-    @sql.execute(query, person_identity)
+    @sql.execute(query, person.identity)
   end
 
-  def persist address, person_identity
+  def persist address, person
     command = """
       INSERT INTO mixed_addresses (street_name, street_address, person_id)
       VALUES (?, ?, ?)
@@ -26,10 +26,8 @@ class AddressesIdentityRepo
     data = [
       address.street_name,
       address.street_address,
-      person_identity
+      person.identity
     ]
     @sql.execute(command, data)
   end
-
-
 end
