@@ -90,13 +90,17 @@ class MixedRepo
   def retrieve_people_by fields
     found_in_people = retrieve_people(fields)
     found_in_addresses = retrieve_addresses_by(fields)
-    mix(found_in_people, found_in_addresses)
+    mix(found_in_people, found_in_addresses, fields)
   end
 
-  def mix found_in_people, found_in_addresses
-    return found_in_people.to_a if found_in_addresses.empty?
-    return found_in_addresses.to_a if found_in_people.empty?
+  def mix found_in_people, found_in_addresses, fields
+    return found_in_people.to_a if only_fields_from(fields, @people)
+    return found_in_addresses.to_a if only_fields_from(fields, @addresses)
     found_in_people.intersection(found_in_addresses).to_a
+  end
+
+  def only_fields_from(fields, repo)
+    fields.keys.all? {|field| repo.includes_field?(field)}
   end
 
   def retrieve_people fields

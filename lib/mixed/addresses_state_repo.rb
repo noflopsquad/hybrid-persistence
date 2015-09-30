@@ -20,7 +20,7 @@ class AddressesStateRepo
   end
 
   def find_by fields
-    addresses_fields = fields.select {|field| ADDRESSES_FIELDS.include?(field)}
+    addresses_fields = fields.select {|field| includes_field?(field)}
     retrieve_by(addresses_fields)
   end
 
@@ -35,6 +35,10 @@ class AddressesStateRepo
                     street_address: street_address,
                     current: false,
                     archivation_time: archivation_time).first
+  end
+
+  def includes_field? field
+    ADDRESSES_FIELDS.include?(field)
   end
 
   private

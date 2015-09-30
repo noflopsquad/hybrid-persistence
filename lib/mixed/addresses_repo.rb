@@ -58,6 +58,10 @@ class AddressesRepo
     build_addresses(addresses_descriptors)
   end
 
+  def includes_field? field
+    @state_repo.includes_field?(field)
+  end
+
   private
   def address_exists? address, person
     addresses = read(person)

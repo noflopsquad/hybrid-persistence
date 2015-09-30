@@ -34,6 +34,10 @@ class PeopleRepo
     @state_repo.read_archived(first_name, last_name)
   end
 
+  def includes_field? field
+    @state_repo.includes_field?(field)
+  end
+
   private
   def to_person descriptor
     Person.create_from(descriptor)

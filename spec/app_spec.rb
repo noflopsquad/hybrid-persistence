@@ -204,7 +204,7 @@ shared_examples_for "a repo" do
       with_nickname(nickname).build()
     }
 
-    it "finds by nickname" do
+    it "finds something by nickname" do
       repo.insert(another_person)
       repo.insert(random_person.changing(nickname: "koko"))
       repo.insert(person)
@@ -214,7 +214,7 @@ shared_examples_for "a repo" do
       expect(found).to contain_exactly(another_person, person)
     end
 
-    it "finds by nickname and title" do
+    it "finds something by nickname and title" do
       repo.insert(another_person.changing(title: "God"))
       repo.insert(random_person.changing(nickname: "koko"))
       repo.insert(person)
@@ -225,7 +225,7 @@ shared_examples_for "a repo" do
       expect(found).to contain_exactly(another_person, another_person_more)
     end
 
-    it "finds by city" do
+    it "finds something by city" do
       another_person.add_address(a_random_address.changing(city: "Honolulu"))
       person.add_address(address)
       another_person_more.add_address(new_fake_address.changing(city: city))
@@ -238,7 +238,7 @@ shared_examples_for "a repo" do
       expect(found).to contain_exactly(person, another_person_more)
     end
 
-    it "finds by city and nickname" do
+    it "finds something by city and nickname" do
       another_person.add_address(a_random_address.changing(city: "Honolulu"))
       person.add_address(address)
       another_person_more.add_address(new_fake_address.changing(city: city))
@@ -250,6 +250,20 @@ shared_examples_for "a repo" do
       found = repo.find_by(city: city, nickname: "yoquese")
 
       expect(found).to contain_exactly(another_person_more)
+    end
+
+    it "finds nothing by city and nickname" do
+      another_person.add_address(a_random_address.changing(city: "Honolulu"))
+      person.add_address(address)
+      another_person_more.add_address(new_fake_address.changing(city: city))
+      another_person_more.changing(nickname: "yoquese")
+      repo.insert(person)
+      repo.insert(another_person)
+      repo.insert(another_person_more)
+
+      found = repo.find_by(city: "Lisboa", nickname: "yoquese")
+
+      expect(found).to be_empty
     end
   end
 end

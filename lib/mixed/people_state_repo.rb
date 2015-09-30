@@ -26,7 +26,7 @@ class PeopleStateRepo
   end
 
   def find_by fields
-    people_fields = fields.select {|field| PEOPLE_FIELDS.include?(field)}
+    people_fields = fields.select {|field| includes_field?(field)}
     retrieve_by(people_fields)
   end
 
@@ -36,6 +36,10 @@ class PeopleStateRepo
       last_name: last_name,
       current: false
     )
+  end
+
+  def includes_field? field
+    PEOPLE_FIELDS.include?(field)
   end
 
   private
