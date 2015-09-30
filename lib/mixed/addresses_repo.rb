@@ -29,7 +29,6 @@ class AddressesRepo
 
   def delete address, delete_time
     @state_repo.remove(address, delete_time)
-    @identity_repo.remove(address)
   end
 
   def find_by fields

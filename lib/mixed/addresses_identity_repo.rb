@@ -3,14 +3,6 @@ class AddressesIdentityRepo
     @sql = sql
   end
 
-  def remove address
-    command = """
-      DELETE FROM mixed_addresses WHERE street_name=?, street_address=?
-      """
-    data = [address.street_name, address.street_address]
-    @sql.execute(command, data)
-  end
-
   def read person_identity
     query = """
       SELECT street_name, street_address FROM mixed_addresses WHERE person_id=?
