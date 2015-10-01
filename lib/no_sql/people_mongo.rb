@@ -4,22 +4,22 @@ class PeopleMongo
   end
 
   def insert person_descriptor
-    @mongo[:people].insert_one(person_descriptor)
+    insert_one(people_collection, person_descriptor)
   end
 
   def read first_name, last_name
-    @mongo[:people].find(first_name: first_name, last_name: last_name).first
+    people_collection.find(first_name: first_name, last_name: last_name).first
   end
 
   def update person_descriptor
-    @mongo[:people].find_one_and_update(
+    people_collection.find_one_and_update(
       { first_name: person_descriptor[:first_name],
         last_name: person_descriptor[:last_name]
         }, person_descriptor)
   end
 
   def delete person_descriptor
-    @mongo[:people].find_one_and_delete(
+    people_collection.find_one_and_delete(
       {
         first_name: person_descriptor[:first_name],
         last_name: person_descriptor[:last_name]
@@ -29,17 +29,16 @@ class PeopleMongo
 
   def find_by fields, people_fields, addresses_fields
     query_hash = compose_query_hash(fields, people_fields, addresses_fields)
-    @mongo[:people].find(query_hash)
+    people_collection.find(query_hash)
   end
 
   def archive person_descriptor
-    person_descriptor.delete("_id")
     person_descriptor.merge!(archivation_time: Time.now.to_i)
-    @mongo[:archived_people].insert_one(person_descriptor)
+    insert_one(archived_people_collection, person_descriptor)
   end
 
   def read_archived first_name, last_name
-    @mongo[:archived_people].find(first_name: first_name, last_name: last_name)
+    archived_people_collection.find(first_name: first_name, last_name: last_name)
   end
 
   def person_exists? first_name, last_name
@@ -48,6 +47,19 @@ class PeopleMongo
   end
 
   private
+
+  def people_collection
+    @mongo[:people]
+  end
+
+  def archived_people_collection
+    @mongo[:archived_people]
+  end
+
+  def insert_one collection, descriptor
+    descriptor.delete("_id")
+    collection.insert_one(descriptor)
+  end
 
   def compose_query_hash fields, people_fields, addresses_fields
     fields.inject({}) do |query_hash_so_far, field|
