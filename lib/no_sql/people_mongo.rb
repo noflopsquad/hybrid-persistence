@@ -33,6 +33,7 @@ class PeopleMongo
   end
 
   def archive person_descriptor
+    person_descriptor.delete("_id")
     person_descriptor.merge!(archivation_time: Time.now.to_i)
     @mongo[:archived_people].insert_one(person_descriptor)
   end
