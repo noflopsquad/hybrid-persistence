@@ -1,5 +1,7 @@
-Polyglot persistence
+Hybrid Persistence
 ====================
+
+##An ongoing experiment on hybrid persistence
 
 ###DB maintenance tasks.
 You can write on the console:
