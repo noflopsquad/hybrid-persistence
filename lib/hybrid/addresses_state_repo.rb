@@ -16,7 +16,7 @@ class AddressesStateRepo
     state = address.variable_states.merge(street_name: address.street_name,
                                           street_address: address.street_address,
                                           current: true)
-    collection.insert_one(state)
+    insert_one(state)
   end
 
   def find_by fields
@@ -62,5 +62,10 @@ class AddressesStateRepo
   def retrieve_by addresses_fields
     return [] if addresses_fields.empty?
     collection.find(addresses_fields)
+  end
+
+  def insert_one descriptor
+    descriptor.delete("_id")
+    collection.insert_one(descriptor)
   end
 end

@@ -22,7 +22,7 @@ class PeopleStateRepo
 
   def persist person
     state = extract_person(person)
-    collection.insert_one(state.merge(current: true))
+    insert_one(state.merge(current: true))
   end
 
   def find_by fields
@@ -73,5 +73,10 @@ class PeopleStateRepo
 
   def collection
     @mongo[:person_states]
+  end
+
+  def insert_one descriptor
+    descriptor.delete("_id")
+    collection.insert_one(descriptor)
   end
 end
