@@ -12,8 +12,8 @@ class PeopleRepo
     @state_repo.persist(person)
   end
 
-  def read first_name, last_name
-    descriptor = @state_repo.read(first_name, last_name)
+  def read person_identity
+    descriptor = @state_repo.read(person_identity)
     to_person(descriptor) unless descriptor.nil?
   end
 
@@ -30,8 +30,8 @@ class PeopleRepo
     to_people(descriptors)
   end
 
-  def read_archived first_name, last_name
-    @state_repo.read_archived(first_name, last_name)
+  def read_archived person_identity
+    @state_repo.read_archived(person_identity)
   end
 
   def includes_field? field

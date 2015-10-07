@@ -12,12 +12,8 @@ class PeopleStateRepo
     archive(person, time)
   end
 
-  def read first_name, last_name
-    collection.find(
-      first_name: first_name,
-      last_name: last_name,
-      current: true
-    ).first
+  def read id
+    collection.find(id: id, current: true).first
   end
 
   def persist person
@@ -30,12 +26,8 @@ class PeopleStateRepo
     retrieve_by(people_fields)
   end
 
-  def read_archived first_name, last_name
-    collection.find(
-      first_name: first_name,
-      last_name: last_name,
-      current: false
-    )
+  def read_archived id
+    collection.find(id: id, current: false)
   end
 
   def includes_field? field
@@ -45,10 +37,9 @@ class PeopleStateRepo
   private
 
   def archive person, archivation_time
-    persisted_state = read(person.first_name, person.last_name)
+    persisted_state = read(person.id)
     collection.find_one_and_update(
-      { first_name: person.first_name,
-        last_name: person.last_name,
+      { id: person.id,
         current: true
         },
       persisted_state.merge(current: false, archivation_time: archivation_time)
@@ -62,6 +53,7 @@ class PeopleStateRepo
 
   def extract_person person
     state = person.variable_states.merge(
+      id: person.id,
       first_name: person.first_name,
       last_name: person.last_name
     )

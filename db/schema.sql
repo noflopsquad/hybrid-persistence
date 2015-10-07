@@ -40,14 +40,10 @@ CREATE TABLE IF NOT EXISTS "people" (
     "nickname" TEXT
 );
 CREATE TABLE IF NOT EXISTS "hybrid_people" (
-    "id" INTEGER PRIMARY KEY,
-    "first_name" TEXT,
-    "last_name" TEXT
+    "id" INTEGER PRIMARY KEY
 );
 CREATE TABLE IF NOT EXISTS "hybrid_addresses" (
-    "street_name" TEXT,
-    "street_address" TEXT,
+    "id" INTEGER PRIMARY KEY,
     "person_id" INTEGER,
-    PRIMARY KEY ("street_name", "street_address"),
     FOREIGN KEY ("person_id") REFERENCES hybrid_people("id")
 );

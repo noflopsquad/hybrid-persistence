@@ -13,7 +13,8 @@ class AddressesStateRepo
   end
 
   def persist address
-    state = address.variable_states.merge(street_name: address.street_name,
+    state = address.variable_states.merge(id: address.id,
+                                          street_name: address.street_name,
                                           street_address: address.street_address,
                                           current: true)
     insert_one(state)
@@ -24,15 +25,12 @@ class AddressesStateRepo
     retrieve_by(addresses_fields)
   end
 
-  def read street_name, street_address
-    collection.find(street_name: street_name,
-                    street_address: street_address,
-                    current: true).first
+  def read id
+    collection.find(id: id, current: true).first
   end
 
-  def read_archived street_name, street_address, archivation_time
-    collection.find(street_name: street_name,
-                    street_address: street_address,
+  def read_archived archivation_time, id
+    collection.find(id: id,
                     current: false,
                     archivation_time: archivation_time).first
   end
@@ -45,12 +43,9 @@ class AddressesStateRepo
   ADDRESSES_FIELDS = [:city, :country]
 
   def archive address, archivation_time
-    persisted_state = read(address.street_name, address.street_address)
+    persisted_state = read(address.id)
     collection.find_one_and_update(
-      { street_name: address.street_name,
-        street_address: address.street_address,
-        current: true
-        },
+      { id: address.id, current: true },
       persisted_state.merge(current: false, archivation_time: archivation_time)
     )
   end

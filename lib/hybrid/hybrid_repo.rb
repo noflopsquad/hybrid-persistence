@@ -1,6 +1,7 @@
 require './lib/hybrid/people_repo'
 require './lib/hybrid/addresses_repo'
 require './lib/hybrid/people_addresses_relationship'
+require './lib/person_identity'
 require 'forwardable'
 require 'set'
 
@@ -50,7 +51,8 @@ class HybridRepo
   end
 
   def read_archived first_name, last_name
-    archived_people_descriptors = @people.read_archived(first_name, last_name)
+    identity = compute_identity(first_name, last_name)
+    archived_people_descriptors = @people.read_archived(identity)
     archived_people = archived_people_descriptors.map do |person_descriptor|
       person = Person.create_from(person_descriptor)
       addresses = @addresses.addresses_of_archived_person(
@@ -71,14 +73,15 @@ class HybridRepo
   end
 
   def retrieve_person first_name, last_name
-    person = @people.read(first_name, last_name)
+    identity = compute_identity(first_name, last_name)
+    person = @people.read(identity)
     raise NotFound.new if person.nil?
     person
   end
 
   def exists? person
     accessible = AccessiblePerson.new(person)
-    persisted = @people.read(accessible.first_name, accessible.last_name)
+    persisted = @people.read(accessible.id)
     not persisted.nil?
   end
 
@@ -122,9 +125,7 @@ class HybridRepo
   def retrieve_person_associated_to address
     accessible = AccessibleAddress.new(address)
     descriptor = @people_addresses_repo.retrieve_person_associated_to(accessible)
-    @people.read(
-      descriptor["first_name"], descriptor["last_name"]
-    )
+    @people.read(descriptor["id"])
   end
 
   def delete_addresses person, delete_time
@@ -152,6 +153,10 @@ class HybridRepo
       accessible = AccessibleAddress.new(address)
       @addresses.insert(accessible, person)
     end
+  end
+
+  def compute_identity first_name, last_name
+    PersonIdentity.new(first_name, last_name).hash
   end
 
   class AccessiblePerson < Person
