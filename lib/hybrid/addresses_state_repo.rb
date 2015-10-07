@@ -21,7 +21,7 @@ class AddressesStateRepo
   end
 
   def find_by fields
-    addresses_fields = fields.select {|field| includes_field?(field)}
+    addresses_fields = addresses_fields_in(fields)
     retrieve_by(addresses_fields)
   end
 
@@ -40,7 +40,12 @@ class AddressesStateRepo
   end
 
   private
+
   ADDRESSES_FIELDS = [:city, :country]
+
+  def addresses_fields_in fields
+    fields.select {|field| includes_field?(field)}
+  end
 
   def archive address, archivation_time
     persisted_state = read(address.id)

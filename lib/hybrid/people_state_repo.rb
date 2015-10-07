@@ -22,7 +22,7 @@ class PeopleStateRepo
   end
 
   def find_by fields
-    people_fields = fields.select {|field| includes_field?(field)}
+    people_fields = people_fields_in(fields)
     retrieve_by(people_fields)
   end
 
@@ -36,19 +36,23 @@ class PeopleStateRepo
 
   private
 
+  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
+
+  def people_fields_in fields
+    fields.select {|field| includes_field?(field)}
+  end
+
   def archive person, archivation_time
     persisted_state = read(person.id)
     collection.find_one_and_update(
-      { id: person.id,
-        current: true
-        },
+      { id: person.id, current: true },
       persisted_state.merge(current: false, archivation_time: archivation_time)
     )
   end
 
-  def retrieve_by people_fields
-    return [] if people_fields.empty?
-    collection.find(people_fields)
+  def retrieve_by fields
+    return [] if fields.empty?
+    collection.find(fields)
   end
 
   def extract_person person
@@ -60,8 +64,6 @@ class PeopleStateRepo
     state.delete(:addresses)
     state
   end
-
-  PEOPLE_FIELDS = [:email, :phone, :credit_card, :title, :nickname]
 
   def collection
     @mongo[:person_states]
